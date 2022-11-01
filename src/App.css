@@ -1,3 +1,30 @@
+/* Footer CSS */
+.content-container{
+    min-height: calc(100vh - 53px);
+}
+
+.footer--pin{
+    position: relative;
+    left: 0;
+    bottom: 0;
+}
+
+footer{
+    border-top: solid 2px black;
+}
+
+.footerDiv{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footerIcon{
+    width: 50px;
+    margin-right: 10px;
+}
+
+
 /* Splitterexpense CSS */
 .inactiveArrow{
     display: none;
