@@ -1,50 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { db } from "../firebase/firestore";
-import { collection, getDocs, query } from "firebase/firestore";
+import React, { useState, useEffect, useContext } from 'react';
+import { FireContext } from "../../Context/FireContext";
 
 export default function Landing() {
 
-    const today = new Date();
+    const {dataArr, cValue, updateCValue, fetchExp} = useContext(FireContext);
 
-    const [dataArr, setDataArr] = useState([]);
-    const [cValue, setCValue] = useState("");
-
-    const fetchExp = async() => {
-        const q = query(collection(db,"monthly-expenses"));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {setDataArr(dataArr => [...dataArr, doc.data()])});
-    }
-
-    const updateCValue = () => {
-        let acc = 0;
-        dataArr.forEach((i) => {
-            if (isThisMonth(i)) {
-                acc += Number(i.amount)
-            }
-        })
-        setCValue(acc)
-    };
-
-    const isThisMonth = (i) => {
-        const thisMonth = today.getMonth();
-        const thisYear = today.getFullYear();
-
-        const expDate = new Date(0);
-        expDate.setUTCSeconds(i.date.seconds)
-        const expMonth = expDate.getMonth();
-        const expYear = expDate.getFullYear();
-
-        if (thisMonth === expMonth && thisYear === expYear) {
-            return true;
-        }
-    }; 
+    const today = new Date().getTime()/1000;
 
     useEffect(() => {
         fetchExp()
     }, []);
 
     useEffect(() => {
-        updateCValue()
+        updateCValue(today)
     }, [dataArr]);
 
     return (
@@ -56,7 +24,6 @@ export default function Landing() {
                 <h2 style={{fontSize:"50px"}}>
                     {cValue}€
                 </h2>
-                <button onClick={() => {isThisMonth()}}>Holi</button>
             </div>
         </>
     )

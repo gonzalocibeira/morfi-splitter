@@ -1,4 +1,5 @@
 import './App.css';
+import FireProvider from './Context/FireContext';
 import Landing from './components/body/Landing';
 import Navbar from "./components/navbar/Navbar";
 import Newexpense from './components/body/Newexpense';
@@ -9,12 +10,14 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Navbar/>
-        <Routes>
-          <Route path="/" element={<Landing/>}/>
-          <Route path="/new" element={<Newexpense/>}/>
-          <Route path="/split" element={<Splitexpense/>}/>
-        </Routes>
+        <FireProvider>
+          <Navbar/>
+          <Routes>
+            <Route path="/" element={<Landing/>}/>
+            <Route path="/new" element={<Newexpense/>}/>
+            <Route path="/split" element={<Splitexpense/>}/>
+          </Routes>
+        </FireProvider>
       </BrowserRouter>
     </>
   );
