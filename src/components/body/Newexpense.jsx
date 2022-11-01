@@ -48,23 +48,27 @@ export default function Newexpense() {
 
     return (
         <>
-            <h2>↓ Input new expense ↓</h2>
-            <form>
-                <label>I,&nbsp;
-                    <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
-                        <option value="-">-</option>
-                        <option value="Nadi">Nadi</option>
-                        <option value="Turco">Turco</option>
-                    </select>
-                </label>
-                <label>&nbsp;just spent&nbsp;
-                    <input style={{width:50}} type="number" value={usrExp} onChange={(e) => setUsrExp(e.target.value)} />
-                </label>
-                <span>€ on the supermarket.</span>
-            </form>
-            <div>
-                <button onClick={()=>clear()}>Clear</button>
-                <button onClick={()=>addExpense()}>Submit expense</button>
+            <div className="newExpenseTitle">
+                <h2>↓ Input new expense ↓</h2>
+            </div>
+            <div className="newExpenseForm">
+                <form>
+                    <label>&nbsp;
+                        <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
+                            <option value="-">-</option>
+                            <option value="Nadi">Nadi</option>
+                            <option value="Turco">Turco</option>
+                        </select>
+                    </label>
+                    <label>&nbsp;spent&nbsp;
+                        <input style={{width:50}} type="number" value={usrExp} onChange={(e) => setUsrExp(e.target.value)} />
+                    </label>
+                    <span>€ on the supermarket.</span>
+                </form>
+            </div>
+            <div className="newExpenseBtns">
+                <button onClick={()=>clear()} className="btnClear">Clear expense</button>
+                <button onClick={()=>addExpense()} className="btnSubmit">Submit expense</button>
             </div>
         </>
     )

@@ -19,14 +19,14 @@ export default function Splitexpense() {
                 acc += Number(i.amount)
             }
             if (name === "Nadi"){
-                setNadiValue(acc);
-            } else (setTurcoValue(acc));
+                setNadiValue(acc.toFixed(2));
+            } else (setTurcoValue(acc.toFixed(2)));
         })
     };
 
     const debtCalc = () => {
         const substract = nadiValue - turcoValue;
-        const owed = Number(Math.abs(substract/2))
+        const owed = Number(Math.abs(substract/2).toFixed(2))
 
         if (substract === 0) {setDebtMsg("No one owes the other"); setClassSwitch("no")};
         if (substract > 0) {let msg = `Turco owes Nadi ${owed}€`; setDebtMsg(msg); setClassSwitch("t")};
@@ -52,18 +52,18 @@ export default function Splitexpense() {
 
     return (
         <>
-            <div>
+            <div className="splitDate">
                 <h2>Select date</h2>
                 <MonthPicker onChange={(date)=>setSelectedMonth(date/1000)}/>
             </div>
-            <div>
+            <div className="splitTotal">
                 <p>Selected month total: {cValue}€</p>
             </div>
-            <div>
-                <p>Nadi: {nadiValue}€</p>
-                <p>Turco: {turcoValue}€</p>
+            <div className="splitNames">
+                <p>Nadi spent: {nadiValue}€</p>
+                <p>Turco spent: {turcoValue}€</p>
             </div>
-            <div>
+            <div className="splitFlow">
                 <span className={`${classSwitch === "t"? "activeArrow" : "inactiveArrow"}`}>←</span><span className={`${classSwitch === "no"? "activeArrow" : "inactiveArrow"}`}>-</span><span className={`${classSwitch === "n"? "activeArrow" : "inactiveArrow"}`}>→</span>
                 <p>{debtMsg}</p>
             </div>
