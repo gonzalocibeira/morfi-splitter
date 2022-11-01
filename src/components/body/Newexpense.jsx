@@ -36,7 +36,7 @@ export default function Newexpense() {
     };
 
     const validation = () => {
-        if (usrName !== "-" && usrExp > 0){
+        if (usrName !== "" && usrExp > 0){
             return true
         }
     };
