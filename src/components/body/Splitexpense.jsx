@@ -56,16 +56,18 @@ export default function Splitexpense() {
                 <h2>Select date</h2>
                 <MonthPicker onChange={(date)=>setSelectedMonth(date/1000)}/>
             </div>
-            <div className="splitTotal">
-                <p>Selected month total: {cValue}€</p>
-            </div>
-            <div className="splitNames">
-                <p>Nadi spent: {nadiValue}€</p>
-                <p>Turco spent: {turcoValue}€</p>
-            </div>
-            <div className="splitFlow">
-                <span className={`${classSwitch === "t"? "activeArrow" : "inactiveArrow"}`}>←</span><span className={`${classSwitch === "no"? "activeArrow" : "inactiveArrow"}`}>-</span><span className={`${classSwitch === "n"? "activeArrow" : "inactiveArrow"}`}>→</span>
-                <p>{debtMsg}</p>
+            <div className="splitCont">
+                <div className="splitTotal">
+                    <p>Selected month total: {cValue}€</p>
+                </div>
+                <div className="splitNames">
+                    <p>Nadi spent: {nadiValue}€</p>
+                    <p>Turco spent: {turcoValue}€</p>
+                </div>
+                <div className="splitFlow">
+                    <span className={`${classSwitch === "t"? "activeArrow" : "inactiveArrow"}`}>←</span><span className={`${classSwitch === "no"? "activeArrow" : "inactiveArrow"}`}>-</span><span className={`${classSwitch === "n"? "activeArrow" : "inactiveArrow"}`}>→</span>
+                    <p>{debtMsg}</p>
+                </div>
             </div>
         </>
     )

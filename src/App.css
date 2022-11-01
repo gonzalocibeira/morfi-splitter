@@ -26,6 +26,13 @@ footer{
 
 
 /* Splitterexpense CSS */
+
+.splitCont{
+    border-radius: 22px;
+    background: #e0e0e0;
+    box-shadow:  6px 6px 12px #9b9b9b, -6px -6px 12px #ffffff;
+}
+
 .inactiveArrow{
     display: none;
 }
@@ -43,18 +50,20 @@ footer{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-bottom: 2px solid black;
+    padding-bottom: 10px;
+    border-radius: 22px;
+    background: #e0e0e0;
+    box-shadow:  6px 6px 12px #9b9b9b, -6px -6px 12px #ffffff;
 }
 
 .splitTotal{
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 18px;
     font-weight: 600;
     border-bottom: 1px solid black;
     font-size: 18px;
-    margin: 0px 20px 0px 20px;
+    margin: 20px 20px 0px 20px;
 
 }
 
@@ -79,6 +88,14 @@ footer{
 }
 
 /* Newexpense CSS */
+
+.newExpenseCont{
+    border-radius: 22px;
+    background: #e0e0e0;
+    box-shadow:  6px 6px 12px #9b9b9b, -6px -6px 12px #ffffff;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
 
 .newExpenseTitle{
     display: flex;
