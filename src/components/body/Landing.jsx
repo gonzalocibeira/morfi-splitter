@@ -4,6 +4,7 @@ import { collection, getDocs, query } from "firebase/firestore";
 
 export default function Landing() {
 
+    const today = new Date();
 
     const [dataArr, setDataArr] = useState([]);
     const [cValue, setCValue] = useState("");
@@ -12,16 +13,31 @@ export default function Landing() {
         const q = query(collection(db,"monthly-expenses"));
         const querySnapshot = await getDocs(q);
         querySnapshot.forEach((doc) => {setDataArr(dataArr => [...dataArr, doc.data()])});
-        return new Promise (function (resolve) {
-            resolve(true)
-        })
     }
 
     const updateCValue = () => {
         let acc = 0;
-        dataArr.forEach((i) => {acc += Number(i.amount)})
+        dataArr.forEach((i) => {
+            if (isThisMonth(i)) {
+                acc += Number(i.amount)
+            }
+        })
         setCValue(acc)
     };
+
+    const isThisMonth = (i) => {
+        const thisMonth = today.getMonth();
+        const thisYear = today.getFullYear();
+
+        const expDate = new Date(0);
+        expDate.setUTCSeconds(i.date.seconds)
+        const expMonth = expDate.getMonth();
+        const expYear = expDate.getFullYear();
+
+        if (thisMonth === expMonth && thisYear === expYear) {
+            return true;
+        }
+    }; 
 
     useEffect(() => {
         fetchExp()
@@ -40,7 +56,7 @@ export default function Landing() {
                 <h2 style={{fontSize:"50px"}}>
                     {cValue}€
                 </h2>
-                <button onClick={()=>console.log(updateCValue())}>ggg</button>
+                <button onClick={() => {isThisMonth()}}>Holi</button>
             </div>
         </>
     )
