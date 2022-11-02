@@ -24,7 +24,8 @@ export default function Newexpense() {
                 valSwal.fire({
                     title: <strong>Expense added!</strong>,
                     icon: 'success'
-                })
+                }),
+                clear()
             )
         } else {
             valSwal.fire({
