@@ -49,6 +49,8 @@ export default function Newexpense() {
     const clear = () => {
         setUsrName("");
         setUsrExp("");
+        setUsrCategory("Supermarket");
+        setUsrNote("")
     };
 
     return (
