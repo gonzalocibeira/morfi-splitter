@@ -4,7 +4,7 @@ export default function Detailedview({name, amount, date, note, category}) {
 
     const expDate = new Date(0);
     expDate.setUTCSeconds(date)
-    const formatedDate = expDate.getDate() + "/" + expDate.getMonth() + "/" + expDate.getFullYear()
+    const formatedDate = expDate.getDate() + "/" + expDate.getMonth()+1 + "/" + expDate.getFullYear()
 
     return (
         <div className="detailedExpense">
