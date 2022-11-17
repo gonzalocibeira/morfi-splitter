@@ -8,7 +8,8 @@ export default function Navbar() {
 
     const categories = [
         {id:0, name:"Add expense", route:"/new"},
-        {id:1, name:"Split expenses", route:"/split"}
+        {id:1, name:"Split expenses", route:"/split"},
+        {id:2, name:"Detailed view", route:"/detail"}
     ]
 
 

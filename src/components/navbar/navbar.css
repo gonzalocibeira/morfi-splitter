@@ -31,6 +31,7 @@ nav{
 .headerBtn{
     color: black;
     align-items: center;
+    text-align: center;
     background-color: #FFFFFF;
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: .25rem;
@@ -45,7 +46,7 @@ nav{
     justify-content: center;
     line-height: 1.25;
     margin: 0;
-    min-height: 3rem;
+    min-height: 2rem;
     padding: calc(.875rem - 1px) calc(1.5rem - 1px);
     position: relative;
     text-decoration: none;
@@ -54,7 +55,7 @@ nav{
     -webkit-user-select: none;
     touch-action: manipulation;
     vertical-align: baseline;
-    width: auto;
+    width: 100px;
 }
 
 .headerBtn:focus {

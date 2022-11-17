@@ -8,6 +8,7 @@ export default function FireProvider({children}){
 
     const [dataArr, setDataArr] = useState([]);
     const [cValue, setCValue] = useState("");
+    const [filteredArr, setFilteredArr] = useState([]);
 
     const updateCValue = (date) => {
         let acc = 0;
@@ -17,6 +18,17 @@ export default function FireProvider({children}){
             }
         })
         setCValue(acc.toFixed(2))
+    };
+
+    const filterDataArr = (date) => {
+        setFilteredArr([]);
+        let provisionalFilteredArr = [];
+        dataArr.forEach((i) => {
+            if (isThisMonth(i, date)) {
+                provisionalFilteredArr.push(i)
+            }
+        setFilteredArr(provisionalFilteredArr);
+        })
     };
 
     const fetchExp = async() => {
@@ -43,7 +55,7 @@ export default function FireProvider({children}){
     }; 
 
     return (
-        <FireContext.Provider value={{dataArr, cValue, updateCValue, fetchExp, isThisMonth}}>
+        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchExp, isThisMonth, filterDataArr}}>
             {children}
         </FireContext.Provider>
     )

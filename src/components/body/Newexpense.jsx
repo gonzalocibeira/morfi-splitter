@@ -10,6 +10,8 @@ export default function Newexpense() {
 
     const [usrName, setUsrName] = useState("");
     const [usrExp, setUsrExp] = useState("");
+    const [usrCategory, setUsrCategory] = useState("Supermarket");
+    const [usrNote, setUsrNote] = useState("");
 
     const addExpense = () => {
 
@@ -18,7 +20,9 @@ export default function Newexpense() {
             addDoc(expCollection, {
                 name:usrName,
                 amount:usrExp,
-                date:serverTimestamp()
+                date:serverTimestamp(),
+                note:usrNote,
+                category:usrCategory
             })
             .then(
                 valSwal.fire({
@@ -55,17 +59,29 @@ export default function Newexpense() {
             <div className="newExpenseCont">
                 <div className="newExpenseForm">
                     <form>
-                        <label>&nbsp;
-                            <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
-                                <option value="-">-</option>
-                                <option value="Nadi">Nadi</option>
-                                <option value="Turco">Turco</option>
-                            </select>
-                        </label>
-                        <label>&nbsp;spent&nbsp;
-                            <input style={{width:50}} type="number" value={usrExp} onChange={(e) => setUsrExp(e.target.value)} />
-                        </label>
-                        <span>€ on the supermarket.</span>
+                        <div>
+                            <label>&nbsp;
+                                <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
+                                    <option value="-">-</option>
+                                    <option value="Nadi">Nadi</option>
+                                    <option value="Turco">Turco</option>
+                                </select>
+                            </label>
+                            <label>&nbsp;spent&nbsp;
+                                <input style={{width:50}} type="number" value={usrExp} onChange={(e) => setUsrExp(e.target.value)} />
+                            </label>
+                            <label>€ on&nbsp;
+                                <select value={usrCategory} onChange={(e) => setUsrCategory(e.target.value)}>
+                                    <option value="Supermarket">Supermarket</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div style={{"marginTop":15}}>
+                            <label>&nbsp; Notes (optional):
+                                <input type="text" value={usrNote} onChange={(e) => setUsrNote(e.target.value)}/>
+                            </label>
+                        </div>
                     </form>
                 </div>
                 <div className="newExpenseBtns">
