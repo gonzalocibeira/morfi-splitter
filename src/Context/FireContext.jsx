@@ -27,6 +27,9 @@ export default function FireProvider({children}){
             if (isThisMonth(i, date)) {
                 provisionalFilteredArr.push(i)
             }
+        provisionalFilteredArr.sort((a, b) => {
+            return a.date - b.date
+        });
         setFilteredArr(provisionalFilteredArr);
         })
     };
