@@ -12,8 +12,8 @@ export default function Detailedview({name, amount, date, note, category}) {
     return (
         <div className="detailedExpense">
             <div style={{display:"flex", flexDirection:"column", alignItems:"center"}}>
-                <p>{name} spent {amount}€ on the {formatedDate}</p>
-                <p style={{marginTop:"-5px"}}>Note: {note}, Category: {category}</p>
+                <p>{formatedDate} - {name} spent {amount}€ on {category ? category : "Supermarket"}</p>
+                {note ? <p style={{marginTop:"-5px"}}>Note: {note}</p> : ""}
             </div>
         </div>
     )

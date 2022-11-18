@@ -207,5 +207,10 @@ input{
     justify-content: center;
     margin-top: 15px;
     margin-bottom: 20px;
-    border-bottom: solid 2px black;
+    border: solid 3px black;
+    border-top-left-radius: 37px 140px;
+    border-top-right-radius: 23px 130px;
+    border-bottom-left-radius: 110px 19px;
+    border-bottom-right-radius: 120px 24px;
+    margin: 10px 10px 10px;
 }
