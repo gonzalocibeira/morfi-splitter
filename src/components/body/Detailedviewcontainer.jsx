@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import Detailedview from "./Detailedview";
 import { FireContext } from "../../Context/FireContext";
 import MonthPicker from 'react-simple-month-picker';
+import Chartviewer from './Chartviewer';
 
 export default function Detailedviewcontainer() {
 
@@ -36,6 +37,7 @@ export default function Detailedviewcontainer() {
             <div style={{display:"flex", alignItems:"center", justifyContent:"center", marginTop:10, }}>
                 {currentDate === "1/1970" ? "" : <h2>↓ Expenses for {currentDate} ↓</h2>}
             </div>
+            {currentDate === "1/1970" ? "" : <Chartviewer key={1000001} data={filteredArr}/>}
             <div style={{marginTop:10, marginBottom:20}}>
                 {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category}/>})}
             </div>

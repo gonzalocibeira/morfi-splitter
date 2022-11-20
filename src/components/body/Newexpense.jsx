@@ -60,7 +60,7 @@ export default function Newexpense() {
             </div>
             <div className="newExpenseCont">
                 <div className="newExpenseForm">
-                    <form>
+                    <form className="expenseForm">
                         <div>
                             <label>&nbsp;
                                 <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
@@ -75,13 +75,14 @@ export default function Newexpense() {
                             <label>€ on&nbsp;
                                 <select value={usrCategory} onChange={(e) => setUsrCategory(e.target.value)}>
                                     <option value="Supermarket">Supermarket</option>
+                                    <option value="Food">Food</option>
                                     <option value="Other">Other</option>
                                 </select>
                             </label>
                         </div>
-                        <div style={{"marginTop":15}}>
-                            <label>&nbsp; Notes (optional):
-                                <input type="text" value={usrNote} onChange={(e) => setUsrNote(e.target.value)}/>
+                        <div style={{marginTop:15, display:"flex", alignItems:"center", justifyContent:"center"}}>
+                            <label>
+                                <textarea placeholder="Write a note (optional)" rows={5} cols={42} value={usrNote} onChange={(e) => setUsrNote(e.target.value)}/>
                             </label>
                         </div>
                     </form>
