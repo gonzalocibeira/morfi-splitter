@@ -2,7 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import Detailedview from "./Detailedview";
 import { FireContext } from "../../Context/FireContext";
 import MonthPicker from 'react-simple-month-picker';
-import Chartviewer from './Chartviewer';
+import DailyChart from './charts/DailyChart';
+import CategoryChart from './charts/CategoryChart';
+import UserChart from './charts/UserChart';
 import AOS from 'aos';
 import "aos/dist/aos.css";
 
@@ -11,6 +13,7 @@ export default function Detailedviewcontainer() {
     const {dataArr, fetchExp, filterDataArr, filteredArr} = useContext(FireContext);
     const [selectedMonth, setSelectedMonth] = useState("");
     const [currentDate, setCurrentDate] = useState("");
+    const [chartType, setChartType] = useState("daily");
 
     const parseDate = (date) => {
         const expDate = new Date(0);
@@ -40,7 +43,17 @@ export default function Detailedviewcontainer() {
             <div style={{display:"flex", alignItems:"center", justifyContent:"center", marginTop:10, }}>
                 {currentDate === "1/1970" ? "" : <h2>↓ Expenses for {currentDate} ↓</h2>}
             </div>
-            {currentDate === "1/1970" ? "" : <Chartviewer key={1000001} data={filteredArr}/>}
+            {currentDate === "1/1970" && <h2 style={{textAlign:"center"}}>Please select a date</h2>}
+            <h3 style={{borderBottom:"solid 2px black", textAlign:"center"}}>Charts</h3>
+            <div style={{display:"flex", justifyContent:"space-evenly", marginBottom:30}}>
+                <button className="chartBtn" onClick={() => setChartType("daily")}>Day to day</button>
+                <button className="chartBtn" onClick={() => setChartType("category")}>By category</button>
+                <button className="chartBtn" onClick={() => setChartType("user")}>By user</button>
+            </div>
+            { currentDate !== "1/1970" && chartType === "daily" && <DailyChart key={1000001} data={filteredArr}/>}
+            { currentDate !== "1/1970" && chartType === "category" && <CategoryChart key={1000002} data={filteredArr}/>}
+            { currentDate !== "1/1970" && chartType === "user" && <UserChart key={1000003} data={filteredArr}/>}
+            <h3 style={{borderBottom:"solid 2px black", textAlign:"center"}}>List of expenses by date</h3>
             <div style={{marginTop:10, marginBottom:20, overflow:"hidden"}}>
                 {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category}/>})}
             </div>

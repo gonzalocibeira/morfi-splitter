@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
 
-export default function Chartviewer(data) {
+export default function DailyChart(data) {
 
     const aggData = [];
     const datesArray = [];
