@@ -76,6 +76,7 @@ export default function Newexpense() {
                                 <select value={usrCategory} onChange={(e) => setUsrCategory(e.target.value)}>
                                     <option value="Supermarket">Supermarket</option>
                                     <option value="Food">Food</option>
+                                    <option value="Utilities">Utilities</option>
                                     <option value="Other">Other</option>
                                 </select>
                             </label>

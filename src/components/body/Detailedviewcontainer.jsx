@@ -3,6 +3,8 @@ import Detailedview from "./Detailedview";
 import { FireContext } from "../../Context/FireContext";
 import MonthPicker from 'react-simple-month-picker';
 import Chartviewer from './Chartviewer';
+import AOS from 'aos';
+import "aos/dist/aos.css";
 
 export default function Detailedviewcontainer() {
 
@@ -20,7 +22,8 @@ export default function Detailedviewcontainer() {
     };
 
     useEffect(() => {
-        fetchExp()
+        fetchExp();
+        AOS.init();
     }, []);
 
     useEffect(() => {
@@ -38,7 +41,7 @@ export default function Detailedviewcontainer() {
                 {currentDate === "1/1970" ? "" : <h2>↓ Expenses for {currentDate} ↓</h2>}
             </div>
             {currentDate === "1/1970" ? "" : <Chartviewer key={1000001} data={filteredArr}/>}
-            <div style={{marginTop:10, marginBottom:20}}>
+            <div style={{marginTop:10, marginBottom:20, overflow:"hidden"}}>
                 {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category}/>})}
             </div>
         </>

@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+
 
 export default function Detailedview({name, amount, date, note, category}) {
 
@@ -10,9 +11,10 @@ export default function Detailedview({name, amount, date, note, category}) {
     const formatedDate = dd + "/" + mm + "/" + yy
 
     return (
-        <div className="detailedExpense">
+        <div className="detailedExpense" data-aos={name === "Nadi" ? "fade-right" : "fade-left"} style={name === "Turco" ? {marginLeft:"auto"} : {marginLeft:10}}>
             <div style={{display:"flex", flexDirection:"column", alignItems:"center"}}>
-                <p>{formatedDate} - {name} spent {amount}€ on {category ? category : "Supermarket"}</p>
+                <p style={{borderBottom:"1px solid black", marginBottom:-5}}>{formatedDate} - <strong>{name}</strong></p>
+                <p>{amount}€ on {category ? category : "Supermarket"}</p>
                 {note ? <p style={{marginTop:"-5px"}}>Note: {note}</p> : ""}
             </div>
         </div>
