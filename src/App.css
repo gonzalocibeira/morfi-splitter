@@ -249,3 +249,22 @@ input{
     background-color: black;
     color: white;
 }
+
+.login{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login > *{
+    margin-bottom: 10px;
+}
+
+.login > input{
+    min-width: 250px;
+}
+
+.loginMsg{
+    text-align: center;
+    font-size: 1.2rem;
+}
