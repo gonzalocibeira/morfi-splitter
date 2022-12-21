@@ -22,15 +22,19 @@ export default function Landing() {
     return (
         <>
             {cUser ? 
-            <div style={styles}>
-                <h2 style={{fontSize:"25px"}}>
-                    The total spent this month is:
-                </h2>
-                <h2 style={{fontSize:"50px"}}>
-                    {cValue}€
-                </h2>
-                <p>Logged in as <strong>{cUser.email}</strong></p>
-                <button className="btnClear" onClick={logout}>Logout</button>
+            <div style={{display:"flex", flexDirection:"column", justifyContent:"space-between", height:"500px"}}>
+                <div style={flexCenter}>
+                    <h2 style={{fontSize:"25px"}}>
+                        The total spent this month is:
+                    </h2>
+                    <h2 style={{fontSize:"50px", borderBottom:"1.5px solid white", margin:"0"}}>
+                        {cValue}€
+                    </h2>
+                </div>
+                <div style={flexCenter}>
+                    <p>Logged in as <strong>{cUser.email}</strong></p>
+                    <button className="btnClear" onClick={logout}>Logout</button>
+                </div>
             </div> : 
             <div>
                 <p className="loginMsg">Please login to use Morfi Splitter</p>
@@ -45,9 +49,9 @@ export default function Landing() {
     )
 }
 
-const styles = {
+// Styles
+const flexCenter = {
     display:"flex",
     flexDirection:"column",
-    justifyContent:"center",
     alignItems:"center"
 }

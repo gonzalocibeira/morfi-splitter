@@ -39,7 +39,7 @@ export default function Detailedview({name, amount, date, note, category}) {
         <div className="detailedExpense" data-aos={name === "Nadi" ? "fade-right" : "fade-left"} style={name === "Turco" ? {marginLeft:"auto"} : {marginLeft:10}}>
             <img className="expenseIcon" src={expenseIcon} alt="" />
             <div style={{display:"flex", flexDirection:"column", alignItems:"center"}}>
-                <p style={{borderBottom:"1px solid black", marginBottom:-5}}>{formatedDate} - <strong>{name}</strong></p>
+                <p style={{borderBottom:"1px solid white", marginBottom:-5}}>{formatedDate} - <strong>{name}</strong></p>
                 <p>{amount}€ on {category ? category : "Supermarket"}</p>
                 {note ? <p style={{marginTop:"-5px"}}>Note: {note}</p> : ""}
             </div>

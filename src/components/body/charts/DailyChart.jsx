@@ -27,11 +27,10 @@ export default function DailyChart(data) {
 
     return (
         <BarChart width={350} height={200} data={aggData}>
-            <CartesianGrid strokeDasharray="3 3"/>
             <Tooltip/>
-            <XAxis dataKey="date"/>
-            <YAxis/>
-            <Bar dataKey="amount" fill="#000000"/>
+            <XAxis dataKey="date" tick={{fill:"#ffffff"}} tickLine={{stroke:"#ffffff"}}/>
+            <YAxis tick={{fill:"#ffffff"}} tickLine={{stroke:"#ffffff"}}/>
+            <Bar dataKey="amount" fill="#B0BEC5"/>
         </BarChart>
     )
 }

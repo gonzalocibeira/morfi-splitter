@@ -89,8 +89,8 @@ export default function Newexpense() {
                     </form>
                 </div>
                 <div className="newExpenseBtns">
-                    <button onClick={()=>clear()} className="btnClear">Clear expense</button>
-                    <button onClick={()=>addExpense()} className="btnSubmit">Submit expense</button>
+                    <button onClick={()=>clear()} className="btnClear">Clear</button>
+                    <button onClick={()=>addExpense()} className="btnSubmit">Submit</button>
                 </div>
             </div>
         </>

@@ -41,22 +41,27 @@ export default function Detailedviewcontainer() {
                 <MonthPicker onChange={(date)=>setSelectedMonth(date/1000)}/>
             </div>
             <div style={{display:"flex", alignItems:"center", justifyContent:"center", marginTop:10, }}>
-                {currentDate === "1/1970" ? "" : <h2>↓ Expenses for {currentDate} ↓</h2>}
+                {currentDate === "1/1970" ?
+                <h2 style={{textAlign:"center"}}>Please select a date</h2> : 
+                <div style={{display:"flex", flexDirection:"column", width:"100vw"}}>
+                    <h2 style={{textAlign:"center"}}>↓ Expenses for {currentDate} ↓</h2>
+                    <h3 style={{borderBottom:"solid 2px black", textAlign:"center"}}>Charts</h3>
+                    <div style={{display:"flex", justifyContent:"space-evenly", marginBottom:30}}>
+                        <button className="chartBtn" onClick={() => setChartType("daily")}>Day to day</button>
+                        <button className="chartBtn" onClick={() => setChartType("category")}>By category</button>
+                        <button className="chartBtn" onClick={() => setChartType("user")}>By user</button>
+                    </div>
+                    {chartType === "daily" && <DailyChart key={1000001} data={filteredArr}/>}
+                    {chartType === "category" && <CategoryChart key={1000002} data={filteredArr}/>}
+                    {chartType === "user" && <UserChart key={1000003} data={filteredArr}/>}
+                    <h3 style={{borderBottom:"solid 2px black", textAlign:"center", marginTop:"40px"}}>List of expenses by date</h3>
+                    <div style={{marginTop:10, marginBottom:20, overflow:"hidden"}}>
+                        {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category}/>})}
+                    </div>
+                </div>
+                }
             </div>
-            {currentDate === "1/1970" && <h2 style={{textAlign:"center"}}>Please select a date</h2>}
-            <h3 style={{borderBottom:"solid 2px black", textAlign:"center"}}>Charts</h3>
-            <div style={{display:"flex", justifyContent:"space-evenly", marginBottom:30}}>
-                <button className="chartBtn" onClick={() => setChartType("daily")}>Day to day</button>
-                <button className="chartBtn" onClick={() => setChartType("category")}>By category</button>
-                <button className="chartBtn" onClick={() => setChartType("user")}>By user</button>
-            </div>
-            { currentDate !== "1/1970" && chartType === "daily" && <DailyChart key={1000001} data={filteredArr}/>}
-            { currentDate !== "1/1970" && chartType === "category" && <CategoryChart key={1000002} data={filteredArr}/>}
-            { currentDate !== "1/1970" && chartType === "user" && <UserChart key={1000003} data={filteredArr}/>}
-            <h3 style={{borderBottom:"solid 2px black", textAlign:"center"}}>List of expenses by date</h3>
-            <div style={{marginTop:10, marginBottom:20, overflow:"hidden"}}>
-                {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category}/>})}
-            </div>
+
         </>
     )
 }
