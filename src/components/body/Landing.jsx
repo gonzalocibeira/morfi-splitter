@@ -5,7 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Landing() {
 
-    const {dataArr, cValue, updateCValue, fetchExp} = useContext(FireContext);
+    const {dataArr, cValue, updateCValue, fetchExp, fetchNames} = useContext(FireContext);
     const {auth, setUsrEmail, setUsrPassword, cUser, setCUser, login, logout} = useContext(AuthContext);
 
     const today = new Date().getTime()/1000;
@@ -24,6 +24,7 @@ export default function Landing() {
             {cUser ? 
             <div style={{display:"flex", flexDirection:"column", justifyContent:"space-between", height:"500px"}}>
                 <div style={flexCenter}>
+                    <button onClick={fetchNames}>test</button>
                     <h2 style={{fontSize:"25px"}}>
                         The total spent this month is:
                     </h2>
