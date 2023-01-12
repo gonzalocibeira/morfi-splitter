@@ -12,8 +12,12 @@ export default function Landing() {
 
     useEffect(() => {
         fetchExp();
-        onAuthStateChanged(auth, (currentUser) => {setCUser(currentUser)})
+        onAuthStateChanged(auth, (currentUser) => {setCUser(currentUser)});
     }, []);
+
+    useEffect(() => {
+        fetchNames();
+    }, [cUser]);
 
     useEffect(() => {
         updateCValue(today)

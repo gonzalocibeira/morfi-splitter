@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { db } from "../firebase/firestore";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "firebase/firestore";
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content'
+import withReactContent from 'sweetalert2-react-content';
+import { FireContext } from "../../Context/FireContext";
 
 export default function Newexpense() {
+
+    const { names } = useContext(FireContext);
 
     const valSwal = withReactContent(Swal);
 
@@ -65,8 +68,8 @@ export default function Newexpense() {
                             <label>&nbsp;
                                 <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
                                     <option value="-">-</option>
-                                    <option value="Nadi">Nadi</option>
-                                    <option value="Turco">Turco</option>
+                                    <option value={names[0]}>{names[0]}</option>
+                                    <option value={names[1]}>{names[1]}</option>
                                 </select>
                             </label>
                             <label>&nbsp;spent&nbsp;

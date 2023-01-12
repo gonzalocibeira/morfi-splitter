@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { FireContext } from "../../Context/FireContext";
-import MonthPicker from 'react-simple-month-picker';
+import MonthPicker from "react-simple-month-picker";
+
 
 
 export default function Splitexpense() {
 
-    const {dataArr, cValue, updateCValue, fetchExp, isThisMonth} = useContext(FireContext);
+    const {dataArr, cValue, updateCValue, fetchExp, isThisMonth, names} = useContext(FireContext);
     const [selectedMonth, setSelectedMonth] = useState("");
-    const [nadiValue, setNadiValue] = useState("");
-    const [turcoValue, setTurcoValue] = useState("");
+    const [u1Value, setU1Value] = useState("");
+    const [u2Value, setU2Value] = useState("");
     const [debtMsg, setDebtMsg] = useState("");
     const [classSwitch, setClassSwitch] = useState("");
 
@@ -18,19 +19,19 @@ export default function Splitexpense() {
             if (isThisMonth(i, date) && i.name === name) {
                 acc += Number(i.amount)
             }
-            if (name === "Nadi"){
-                setNadiValue(acc.toFixed(2));
-            } else (setTurcoValue(acc.toFixed(2)));
+            if (name === names[0]){
+                setU1Value(acc.toFixed(2));
+            } else (setU2Value(acc.toFixed(2)));
         })
     };
 
     const debtCalc = () => {
-        const substract = nadiValue - turcoValue;
+        const substract = u1Value - u2Value;
         const owed = Number(Math.abs(substract/2).toFixed(2))
 
         if (substract === 0) {setDebtMsg("No one owes the other"); setClassSwitch("no")};
-        if (substract > 0) {let msg = `Turco owes Nadi ${owed}€`; setDebtMsg(msg); setClassSwitch("t")};
-        if (substract < 0) {let msg = `Nadi owes Turco ${owed} €`; setDebtMsg(msg); setClassSwitch("n")};
+        if (substract > 0) {let msg = `${names[1]} owes ${names[0]} ${owed}€`; setDebtMsg(msg); setClassSwitch("t")};
+        if (substract < 0) {let msg = `${names[0]} owes ${names[1]} ${owed} €`; setDebtMsg(msg); setClassSwitch("n")};
     };
 
     useEffect(() => {
@@ -39,14 +40,14 @@ export default function Splitexpense() {
 
     useEffect(() => {
         updateCValue(selectedMonth);
-        updatePValue("Nadi", selectedMonth);
-        updatePValue("Turco", selectedMonth);
+        updatePValue(names[0], selectedMonth);
+        updatePValue(names[1], selectedMonth);
 
     }, [dataArr, selectedMonth]);
 
     useEffect(() => {
         debtCalc()
-    }, [nadiValue, turcoValue]);
+    }, [u1Value, u2Value]);
 
 
 
@@ -61,8 +62,8 @@ export default function Splitexpense() {
                     <p>Selected month total: {cValue}€</p>
                 </div>
                 <div className="splitNames">
-                    <p>Nadi spent: {nadiValue}€</p>
-                    <p>Turco spent: {turcoValue}€</p>
+                    <p>{names[0]} spent: {u1Value}€</p>
+                    <p>{names[1]} spent: {u2Value}€</p>
                 </div>
                 <div className="splitFlow">
                     <span className={`${classSwitch === "t"? "activeArrow" : "inactiveArrow"}`}>←</span><span className={`${classSwitch === "no"? "activeArrow" : "inactiveArrow"}`}>-</span><span className={`${classSwitch === "n"? "activeArrow" : "inactiveArrow"}`}>→</span>

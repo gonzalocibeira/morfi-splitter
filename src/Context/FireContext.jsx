@@ -16,7 +16,8 @@ export default function FireProvider({children}){
 
     const fetchNames = async () => {
         setNames([]);
-        const snap = await getDoc(doc(db, "users", "5HTW19fMwDbfc5Gj1ufjMKC3kXu1"))
+        const uid = cUser.uid;
+        const snap = await getDoc(doc(db, "users", uid))
         setNames(snap.data().names);
     };
 
@@ -68,7 +69,7 @@ export default function FireProvider({children}){
     }; 
 
     return (
-        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchExp, isThisMonth, filterDataArr, fetchNames}}>
+        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchExp, isThisMonth, filterDataArr, names, fetchNames}}>
             {children}
         </FireContext.Provider>
     )

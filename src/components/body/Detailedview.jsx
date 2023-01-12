@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Supermarket, Food, Utilities, Other } from '../../assets/icons';
+import { FireContext } from "../../Context/FireContext";
 
 
 export default function Detailedview({name, amount, date, note, category}) {
+
+    const { names } = useContext(FireContext);
 
     const expDate = new Date(0);
     expDate.setUTCSeconds(date);
@@ -36,7 +39,7 @@ export default function Detailedview({name, amount, date, note, category}) {
     };
 
     return (
-        <div className="detailedExpense" data-aos={name === "Nadi" ? "fade-right" : "fade-left"} style={name === "Turco" ? {marginLeft:"auto"} : {marginLeft:10}}>
+        <div className="detailedExpense" data-aos={name === names[0] ? "fade-right" : "fade-left"} style={name === names[1] ? {marginLeft:"auto"} : {marginLeft:10}}>
             <img className="expenseIcon" src={expenseIcon} alt="" />
             <div style={{display:"flex", flexDirection:"column", alignItems:"center"}}>
                 <p style={{borderBottom:"1px solid white", marginBottom:-5}}>{formatedDate} - <strong>{name}</strong></p>
