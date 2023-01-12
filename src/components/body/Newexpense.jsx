@@ -4,10 +4,13 @@ import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "fir
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { FireContext } from "../../Context/FireContext";
+import { AuthContext } from '../../Context/AuthContext';
 
 export default function Newexpense() {
 
     const { names } = useContext(FireContext);
+    const { cUser }  = useContext(AuthContext);
+
 
     const valSwal = withReactContent(Swal);
 
@@ -16,24 +19,23 @@ export default function Newexpense() {
     const [usrCategory, setUsrCategory] = useState("Supermarket");
     const [usrNote, setUsrNote] = useState("");
 
-    const addExpense = () => {
+    const addExpense = async () => {
 
         if (validation()){
-            const expCollection = collection(db,"monthly-expenses");
-            addDoc(expCollection, {
+            const uid = cUser.uid
+            const expCollection = collection(db, "expenses", uid, "monthly")
+            await addDoc(expCollection, {
                 name:usrName,
                 amount:usrExp,
                 date:serverTimestamp(),
                 note:usrNote,
                 category:usrCategory
-            })
-            .then(
-                valSwal.fire({
-                    title: <strong>Expense added!</strong>,
-                    icon: 'success'
-                }),
-                clear()
-            )
+            });
+            valSwal.fire({
+                title: <strong>Expense added!</strong>,
+                icon: 'success'
+            });
+            clear()
         } else {
             valSwal.fire({
                 title: <strong>Please fill in name & amount</strong>,
