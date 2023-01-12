@@ -5,18 +5,17 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Landing() {
 
-    const {dataArr, cValue, updateCValue, fetchExp, fetchNames} = useContext(FireContext);
+    const {dataArr, cValue, updateCValue, fetchData} = useContext(FireContext);
     const {auth, setUsrEmail, setUsrPassword, cUser, setCUser, login, logout} = useContext(AuthContext);
 
     const today = new Date().getTime()/1000;
 
     useEffect(() => {
-        fetchExp();
         onAuthStateChanged(auth, (currentUser) => {setCUser(currentUser)});
     }, []);
 
     useEffect(() => {
-        fetchNames();
+        fetchData();
     }, [cUser]);
 
     useEffect(() => {
@@ -28,7 +27,6 @@ export default function Landing() {
             {cUser ? 
             <div style={{display:"flex", flexDirection:"column", justifyContent:"space-between", height:"500px"}}>
                 <div style={flexCenter}>
-                    <button onClick={fetchNames}>test</button>
                     <h2 style={{fontSize:"25px"}}>
                         The total spent this month is:
                     </h2>

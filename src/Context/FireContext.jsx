@@ -14,13 +14,6 @@ export default function FireProvider({children}){
     const [filteredArr, setFilteredArr] = useState([]);
     const [names, setNames] = useState([]);
 
-    const fetchNames = async () => {
-        setNames([]);
-        const uid = cUser.uid;
-        const snap = await getDoc(doc(db, "users", uid))
-        setNames(snap.data().names);
-    };
-
     const updateCValue = (date) => {
         let acc = 0;
         dataArr.forEach((i) => {
@@ -45,11 +38,20 @@ export default function FireProvider({children}){
         })
     };
 
-    const fetchExp = async() => {
-        setDataArr([]);
-        const q = query(collection(db,"monthly-expenses"));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach((doc) => {setDataArr(dataArr => [...dataArr, doc.data()])});
+    const fetchData = async() => {
+        if (cUser){
+            const uid = cUser.uid;
+
+            setNames([]);
+            setDataArr([]);
+
+            const q = query(collection(db, "expenses", uid, "monthly"));
+            const expSnap = await getDocs(q);
+            expSnap.forEach((doc) => {setDataArr(dataArr => [...dataArr, doc.data()])});
+
+            const snap = await getDoc(doc(db, "users", uid));
+            setNames(snap.data().names);
+        }
     };
 
     const isThisMonth = (i, date) => {
@@ -69,7 +71,7 @@ export default function FireProvider({children}){
     }; 
 
     return (
-        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchExp, isThisMonth, filterDataArr, names, fetchNames}}>
+        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names}}>
             {children}
         </FireContext.Provider>
     )

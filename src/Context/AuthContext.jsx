@@ -31,6 +31,7 @@ export default function AuthProvider({children}){
 
     const logout = async () => {
         await signOut(auth);
+        setCUser();
         authSwal.fire({
             title: <strong>Logged out successfully.</strong>,
             icon: 'info'

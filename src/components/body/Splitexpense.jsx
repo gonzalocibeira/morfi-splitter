@@ -6,7 +6,7 @@ import MonthPicker from "react-simple-month-picker";
 
 export default function Splitexpense() {
 
-    const {dataArr, cValue, updateCValue, fetchExp, isThisMonth, names} = useContext(FireContext);
+    const {dataArr, cValue, updateCValue, fetchData, isThisMonth, names} = useContext(FireContext);
     const [selectedMonth, setSelectedMonth] = useState("");
     const [u1Value, setU1Value] = useState("");
     const [u2Value, setU2Value] = useState("");
@@ -35,7 +35,7 @@ export default function Splitexpense() {
     };
 
     useEffect(() => {
-        fetchExp()
+        fetchData()
     }, []);
 
     useEffect(() => {

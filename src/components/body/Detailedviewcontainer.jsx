@@ -10,7 +10,7 @@ import "aos/dist/aos.css";
 
 export default function Detailedviewcontainer() {
 
-    const {dataArr, fetchExp, filterDataArr, filteredArr} = useContext(FireContext);
+    const { dataArr, fetchData, filterDataArr, filteredArr } = useContext(FireContext);
     const [selectedMonth, setSelectedMonth] = useState("");
     const [currentDate, setCurrentDate] = useState("");
     const [chartType, setChartType] = useState("daily");
@@ -25,7 +25,7 @@ export default function Detailedviewcontainer() {
     };
 
     useEffect(() => {
-        fetchExp();
+        fetchData();
         AOS.init();
     }, []);
 
