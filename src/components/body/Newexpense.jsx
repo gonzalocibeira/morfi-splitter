@@ -18,6 +18,7 @@ export default function Newexpense() {
     const [usrExp, setUsrExp] = useState("");
     const [usrCategory, setUsrCategory] = useState("Supermarket");
     const [usrNote, setUsrNote] = useState("");
+    const [nonSplitable, setNonSplitable] = useState(false);
 
     const addExpense = async () => {
 
@@ -29,7 +30,8 @@ export default function Newexpense() {
                 amount:usrExp,
                 date:serverTimestamp(),
                 note:usrNote,
-                category:usrCategory
+                category:usrCategory,
+                nonSplit:nonSplitable
             });
             valSwal.fire({
                 title: <strong>Expense added!</strong>,
@@ -56,6 +58,7 @@ export default function Newexpense() {
         setUsrExp("");
         setUsrCategory("Supermarket");
         setUsrNote("")
+        setNonSplitable(false)
     };
 
     return (
@@ -84,6 +87,11 @@ export default function Newexpense() {
                                     <option value="Utilities">Utilities</option>
                                     <option value="Other">Other</option>
                                 </select>
+                            </label>
+                        </div>
+                        <div style={{marginTop:15}}>
+                            <label>Don't split, charge in full to the other person - still WIP
+                                <input type="checkbox" checked={nonSplitable} onChange={(e) => setNonSplitable(e.target.checked)}/>
                             </label>
                         </div>
                         <div style={{marginTop:15, display:"flex", alignItems:"center", justifyContent:"center"}}>
