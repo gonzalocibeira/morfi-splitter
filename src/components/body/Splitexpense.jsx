@@ -8,30 +8,49 @@ export default function Splitexpense() {
 
     const {dataArr, cValue, updateCValue, fetchData, isThisMonth, names} = useContext(FireContext);
     const [selectedMonth, setSelectedMonth] = useState("");
-    const [u1Value, setU1Value] = useState("");
-    const [u2Value, setU2Value] = useState("");
+    const [u1Value, setU1Value] = useState(0);
+    const [u2Value, setU2Value] = useState(0);
+    const [u1NoSplit, setU1NoSplit] = useState(0);
+    const [u2NoSplit, setU2NoSplit] = useState(0);
     const [debtMsg, setDebtMsg] = useState("");
     const [classSwitch, setClassSwitch] = useState("");
 
-    const updatePValue = (name,date) => {
+    const updatePValue = (name, date) => {
         let acc = 0;
-        dataArr.forEach((i) => {
+        let acc2 = 0;
+
+        const onlySplittableDataArr = dataArr.filter(obj => !obj.hasOwnProperty("nonSplit") || obj.nonSplit === false);
+        onlySplittableDataArr.forEach((i) => {
             if (isThisMonth(i, date) && i.name === name) {
                 acc += Number(i.amount)
             }
-            if (name === names[0]){
-                setU1Value(acc.toFixed(2));
-            } else (setU2Value(acc.toFixed(2)));
+        });
+
+        const onlyNonSplittableDataArr = dataArr.filter(obj => obj.nonSplit === true);
+        onlyNonSplittableDataArr.forEach((i) => {
+            if (isThisMonth(i, date) && i.name === name) {
+                acc2 += Number(i.amount)
+            }
         })
+
+        if (name === names[0]){
+            setU1Value(Number(acc.toFixed(2)));
+            setU1NoSplit(Number(acc2.toFixed(2)))
+        } else {
+            setU2Value(Number(acc.toFixed(2)));
+            setU2NoSplit(Number(acc2.toFixed(2)))    
+        };
     };
 
     const debtCalc = () => {
-        const substract = u1Value - u2Value;
-        const owed = Number(Math.abs(substract/2).toFixed(2))
+        const substractSplitOnly = u1Value - u2Value;
 
-        if (substract === 0) {setDebtMsg("No one owes the other"); setClassSwitch("no")};
-        if (substract > 0) {let msg = `${names[1]} owes ${names[0]} ${owed}€`; setDebtMsg(msg); setClassSwitch("t")};
-        if (substract < 0) {let msg = `${names[0]} owes ${names[1]} ${owed} €`; setDebtMsg(msg); setClassSwitch("n")};
+        const owedPartial = Number((substractSplitOnly/2).toFixed(2)) + u1NoSplit - u2NoSplit;
+        const owed = Number(Math.abs(owedPartial))
+
+        if (owedPartial === 0) {setDebtMsg("No one owes the other "); setClassSwitch("no")};
+        if (owedPartial > 0) {let msg = `${names[1]} owes ${names[0]} ${owed}€`; setDebtMsg(msg); setClassSwitch("t")};
+        if (owedPartial < 0) {let msg = `${names[0]} owes ${names[1]} ${owed} €`; setDebtMsg(msg); setClassSwitch("n")};
     };
 
     useEffect(() => {
@@ -62,8 +81,20 @@ export default function Splitexpense() {
                     <p>Selected month total: {cValue}€</p>
                 </div>
                 <div className="splitNames">
-                    <p>{names[0]} spent: {u1Value}€</p>
-                    <p>{names[1]} spent: {u2Value}€</p>
+                    <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", width:"90%"}}>
+                        <h4>Shared expenses</h4>
+                        <div style={{display:"flex", justifyContent:"space-around", width:"100%"}}>
+                            <p>{names[0]} spent: {u1Value}€</p>
+                            <p>{names[1]} spent: {u2Value}€</p>
+                        </div>
+                    </div>
+                    <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", width:"90%", marginTop:15, }}>
+                        <h4>Purchases made on behalf of the other</h4>
+                        <div style={{display:"flex", justifyContent:"space-around", width:"100%"}}>
+                            <p>{names[0]} spent: {u1NoSplit}€</p>
+                            <p>{names[1]} spent: {u2NoSplit}€</p>
+                        </div>
+                    </div>
                 </div>
                 <div className="splitFlow">
                     <span className={`${classSwitch === "t"? "activeArrow" : "inactiveArrow"}`}>←</span><span className={`${classSwitch === "no"? "activeArrow" : "inactiveArrow"}`}>-</span><span className={`${classSwitch === "n"? "activeArrow" : "inactiveArrow"}`}>→</span>

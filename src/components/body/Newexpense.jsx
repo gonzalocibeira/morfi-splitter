@@ -90,7 +90,7 @@ export default function Newexpense() {
                             </label>
                         </div>
                         <div style={{marginTop:15}}>
-                            <label>Don't split, charge in full to the other person - still WIP
+                            <label>Don't split, charge in full to the other person!
                                 <input type="checkbox" checked={nonSplitable} onChange={(e) => setNonSplitable(e.target.checked)}/>
                             </label>
                         </div>

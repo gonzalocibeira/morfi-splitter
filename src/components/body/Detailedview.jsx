@@ -3,7 +3,7 @@ import { Supermarket, Food, Utilities, Other } from '../../assets/icons';
 import { FireContext } from "../../Context/FireContext";
 
 
-export default function Detailedview({name, amount, date, note, category}) {
+export default function Detailedview({name, amount, date, note, category, nonSplit}) {
 
     const { names } = useContext(FireContext);
 
@@ -44,7 +44,10 @@ export default function Detailedview({name, amount, date, note, category}) {
             <div style={{display:"flex", flexDirection:"column", alignItems:"center"}}>
                 <p style={{borderBottom:"1px solid white", marginBottom:-5}}>{formatedDate} - <strong>{name}</strong></p>
                 <p>{amount}€ on {category ? category : "Supermarket"}</p>
-                {note ? <p style={{marginTop:"-5px"}}>Note: {note}</p> : ""}
+                <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
+                    {note ? <p style={{marginTop:"-5px", textAlign:"center"}}>Note: {note}</p> : ""}
+                    {nonSplit === true ? <p style={{marginTop:"-5px", textAlign:"center", color:"RGB(70,61,134)", backgroundColor:"white", width:"90%", fontWeight:700}}>Purchase made for the other user</p> : ""}
+                </div>
             </div>
         </div>
     )

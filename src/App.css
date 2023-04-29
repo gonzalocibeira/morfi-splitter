@@ -72,11 +72,11 @@ footer{
 
 .splitNames{
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
     font-size: 16px;
     font-weight: 700;
-    height: 20px;
     margin-top: 10px;
 }
 
@@ -88,6 +88,7 @@ footer{
     color: #CFD8DC;
     font-size: 16px;
     font-weight: 700;
+    margin-top: 10px;
 }
 
 /* Newexpense CSS */
