@@ -1,3 +1,3 @@
-#Morfi Splitter
+# Morfi Splitter
 
-A SPA to split monthly food costs.
+A React SPA to split monthly costs between 2 people.
