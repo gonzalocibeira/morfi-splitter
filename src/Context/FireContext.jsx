@@ -18,7 +18,7 @@ export default function FireProvider({children}){
         let acc = 0;
         dataArr.forEach((i) => {
             if (isThisMonth(i, date)) {
-                acc += Number(i.amount)
+                acc += Number(i.data.amount)
             }
         });
         setCValue(acc.toFixed(2))
@@ -32,7 +32,7 @@ export default function FireProvider({children}){
                 provisionalFilteredArr.push(i)
             };
         provisionalFilteredArr.sort((a, b) => {
-            return a.date - b.date
+            return a.data.date - b.data.date
         });
         setFilteredArr(provisionalFilteredArr);
         })
@@ -47,7 +47,7 @@ export default function FireProvider({children}){
 
             const q = query(collection(db, "expenses", uid, "monthly"));
             const expSnap = await getDocs(q);
-            expSnap.forEach((doc) => {setDataArr(dataArr => [...dataArr, doc.data()])});
+            expSnap.forEach((doc) => {setDataArr(dataArr => [...dataArr, { id: doc.id, data: doc.data() }])});
 
             const snap = await getDoc(doc(db, "users", uid));
             setNames(snap.data().names);
@@ -61,7 +61,7 @@ export default function FireProvider({children}){
         const thisYear = today.getFullYear();
 
         const expDate = new Date(0);
-        expDate.setUTCSeconds(i.date.seconds);
+        expDate.setUTCSeconds(i.data.date.seconds);
         const expMonth = expDate.getMonth();
         const expYear = expDate.getFullYear();
 

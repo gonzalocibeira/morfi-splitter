@@ -7,14 +7,14 @@ export default function CategoryChart(data) {
     const categoriesArray = [];
 
     data.data.forEach( (i) => {
-        const index = categoriesArray.indexOf(i.category)
+        const index = categoriesArray.indexOf(i.data.category)
         if (index == -1) {
-            categoriesArray.push(i.category);
-            let entry = {category: i.category, amount: parseInt(i.amount)};
+            categoriesArray.push(i.data.category);
+            let entry = {category: i.data.category, amount: parseInt(i.data.amount)};
             aggData.push(entry);
         }
         else {
-            aggData[index].amount += parseInt(i.amount);
+            aggData[index].amount += parseInt(i.data.amount);
         }
     });
 

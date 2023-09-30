@@ -7,14 +7,14 @@ export default function UserChart(data) {
     const usersArray = [];
 
     data.data.forEach( (i) => {
-        const index = usersArray.indexOf(i.name)
+        const index = usersArray.indexOf(i.data.name)
         if (index == -1) {
-            usersArray.push(i.name);
-            let entry = {name: i.name, amount: parseInt(i.amount)};
+            usersArray.push(i.data.name);
+            let entry = {name: i.data.name, amount: parseInt(i.data.amount)};
             aggData.push(entry);
         }
         else {
-            aggData[index].amount += parseInt(i.amount);
+            aggData[index].amount += parseInt(i.data.amount);
         }
     });
 

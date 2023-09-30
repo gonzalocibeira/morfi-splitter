@@ -8,7 +8,7 @@ export default function DailyChart(data) {
 
     data.data.forEach((i) => {
         const thisDate = new Date (0);
-        thisDate.setUTCSeconds(i.date.seconds);
+        thisDate.setUTCSeconds(i.data.date.seconds);
         const dd = thisDate.getDate();
         const mm = thisDate.getMonth() + 1;
         const yy = thisDate.getFullYear();
@@ -17,11 +17,11 @@ export default function DailyChart(data) {
         const index = datesArray.indexOf(formatedDate);
         if (index == -1) {
             datesArray.push(formatedDate);
-            let entry = {date: formatedDate, amount: parseInt(i.amount)};
+            let entry = {date: formatedDate, amount: parseInt(i.data.amount)};
             aggData.push(entry);
         }
         else {
-            aggData[index].amount += parseInt(i.amount);
+            aggData[index].amount += parseInt(i.data.amount);
         }
     });
 

@@ -19,17 +19,17 @@ export default function Splitexpense() {
         let acc = 0;
         let acc2 = 0;
 
-        const onlySplittableDataArr = dataArr.filter(obj => !obj.hasOwnProperty("nonSplit") || obj.nonSplit === false);
+        const onlySplittableDataArr = dataArr.filter(obj => !obj.data.hasOwnProperty("nonSplit") || obj.data.nonSplit === false);
         onlySplittableDataArr.forEach((i) => {
-            if (isThisMonth(i, date) && i.name === name) {
-                acc += Number(i.amount)
+            if (isThisMonth(i, date) && i.data.name === name) {
+                acc += Number(i.data.amount)
             }
         });
 
-        const onlyNonSplittableDataArr = dataArr.filter(obj => obj.nonSplit === true);
+        const onlyNonSplittableDataArr = dataArr.filter(obj => obj.data.nonSplit === true);
         onlyNonSplittableDataArr.forEach((i) => {
-            if (isThisMonth(i, date) && i.name === name) {
-                acc2 += Number(i.amount)
+            if (isThisMonth(i, date) && i.data.name === name) {
+                acc2 += Number(i.data.amount)
             }
         })
 

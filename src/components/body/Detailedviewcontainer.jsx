@@ -55,9 +55,9 @@ export default function Detailedviewcontainer() {
                     {chartType === "category" && <CategoryChart key={1000002} data={filteredArr}/>}
                     {chartType === "user" && <UserChart key={1000003} data={filteredArr}/>}
                     <h3 style={{borderBottom:"solid 2px black", textAlign:"center", marginTop:"40px"}}>List of expenses by date</h3>
-                    <div style={{marginTop:10, marginBottom:20, overflow:"hidden"}}>
-                        {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category} nonSplit={el.nonSplit}/>})}
-                    </div>
+{/*                     <div style={{marginTop:10, marginBottom:20, overflow:"hidden"}}>
+                        {filteredArr.map((el) => {return <Detailedview key={Math.floor(Math.random()*100000)} name={el.name} amount={el.amount} date={el.date.seconds} note={el.note} category={el.category} nonSplit={el.nonSplit} element={el}/>})}
+                    </div> */}
                 </div>
                 }
             </div>
