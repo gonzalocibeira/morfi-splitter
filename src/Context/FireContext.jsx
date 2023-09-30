@@ -54,16 +54,21 @@ export default function FireProvider({children}){
         }
     };
 
-    const deleteDoc = async (docId) => {
+    const deleteEntry = async (docId) => {
 
         if (cUser){
             const uid = cUser.uid;
 
-            const docRef = query(doc(db, "expenses", uid, "monthly", docId));
-            const snap = await getDoc(docRef);
-            const kk = await deleteDoc(snap)
+            const docRef = doc(db, "expenses", uid, "monthly", docId);
 
-            console.log("ayayaya");
+            try {
+                await deleteDoc(docRef);
+                fetchData();
+                const today = new Date().getTime()/1000;
+                updateCValue(today)
+            } catch (err) {
+                console.log(err.message)
+            }
             
         }
     };
@@ -85,7 +90,7 @@ export default function FireProvider({children}){
     }; 
 
     return (
-        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names, deleteDoc}}>
+        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names, deleteEntry}}>
             {children}
         </FireContext.Provider>
     )

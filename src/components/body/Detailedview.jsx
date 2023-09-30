@@ -5,7 +5,7 @@ import { FireContext } from "../../Context/FireContext";
 
 export default function Detailedview({name, amount, date, note, category, nonSplit, docId}) {
 
-    const { names, deleteDoc } = useContext(FireContext);
+    const { names, deleteEntry } = useContext(FireContext);
 
     const expDate = new Date(0);
     expDate.setUTCSeconds(date);
@@ -56,7 +56,7 @@ export default function Detailedview({name, amount, date, note, category, nonSpl
                 <div>
                     <button style={{backgroundColor:"LightGray", border:"none", color:"black", borderRadius:"2px", minWidth:"40px"}} onClick={()=>{optionsView === false ? setOptionsView(true) : setOptionsView(false)}}>{optionsIcon}</button>
                 </div>
-                {optionsView && <button style={{backgroundColor:"#f44336", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"2px"}} onClick={()=>{deleteDoc(docId)}}>Delete entry</button>}
+                {optionsView && <button style={{backgroundColor:"#f44336", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"2px"}} onClick={()=>{deleteEntry(docId)}}>Delete entry</button>}
             </div>
         </div>
     )
