@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext } from 'react';
 import { db } from "../components/firebase/firestore";
-import { collection, getDocs, getDoc, doc, query, addDoc} from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, query, addDoc, deleteDoc} from "firebase/firestore";
 import { AuthContext } from '../Context/AuthContext';
 
 export const FireContext = createContext();
@@ -54,6 +54,20 @@ export default function FireProvider({children}){
         }
     };
 
+    const deleteDoc = async (docId) => {
+
+        if (cUser){
+            const uid = cUser.uid;
+
+            const docRef = query(doc(db, "expenses", uid, "monthly", docId));
+            const snap = await getDoc(docRef);
+            const kk = await deleteDoc(snap)
+
+            console.log("ayayaya");
+            
+        }
+    };
+
     const isThisMonth = (i, date) => {
         const today = new Date(0);
         today.setUTCSeconds(date);
@@ -71,7 +85,7 @@ export default function FireProvider({children}){
     }; 
 
     return (
-        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names}}>
+        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names, deleteDoc}}>
             {children}
         </FireContext.Provider>
     )
