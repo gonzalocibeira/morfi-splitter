@@ -28,9 +28,9 @@ export default function DailyChart(data) {
     return (
         <BarChart width={350} height={200} data={aggData}>
             <Tooltip/>
-            <XAxis dataKey="date" tick={{fill:"#ffffff"}} tickLine={{stroke:"#ffffff"}}/>
-            <YAxis tick={{fill:"#ffffff"}} tickLine={{stroke:"#ffffff"}}/>
-            <Bar dataKey="amount" fill="#B0BEC5"/>
+            <XAxis dataKey="date" tick={{fill:"#333"}} tickLine={{stroke:"#333"}}/>
+            <YAxis tick={{fill:"#333"}} tickLine={{stroke:"#333"}}/>
+            <Bar dataKey="amount" fill="#6c757d"/>
         </BarChart>
     )
 }

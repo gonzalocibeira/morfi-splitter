@@ -1,8 +1,9 @@
 /* Footer CSS */
 .content-container{
     min-height: calc(100vh - 53px);
-    background-color: #37474F;
-    color: white;
+    background-color: var(--gray-light);
+    color: var(--text-color);
+    padding-bottom: 20px;
 }
 
 .footer--pin{
@@ -12,9 +13,10 @@
 }
 
 footer{
-    border-top: solid 2px black;
-    background-color: #B0BEC5;
-    color: black;
+    border-top: 1px solid #ddd;
+    background-color: #ffffff;
+    color: var(--text-color);
+    padding: 10px 0;
 }
 
 .footerDiv{
@@ -31,9 +33,10 @@ footer{
 
 /* Splitterexpense CSS */
 .splitCont{
-    background: #607D8B;
-    box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     margin-top: 30px;
+    border-radius: 8px;
 }
 
 .inactiveArrow{
@@ -43,7 +46,7 @@ footer{
 .activeArrow{
     font-size: 50px;
     font-weight: 900;
-    color: #90A4AE;
+    color: var(--primary-color);
     height: 40px;
     margin-top: -15px;
 }
@@ -55,8 +58,9 @@ footer{
     align-items: center;
     padding-bottom: 10px;
     margin-top: 30px;
-    background: #607D8B;
-    box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
 }
 
 .splitTotal{
@@ -64,7 +68,7 @@ footer{
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #ddd;
     font-size: 18px;
     margin: 20px 20px 0px 20px;
 
@@ -78,6 +82,7 @@ footer{
     font-size: 16px;
     font-weight: 700;
     margin-top: 10px;
+    color: var(--text-color);
 }
 
 .splitFlow{
@@ -85,7 +90,7 @@ footer{
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: #CFD8DC;
+    color: var(--text-color);
     font-size: 16px;
     font-weight: 700;
     margin-top: 10px;
@@ -93,10 +98,11 @@ footer{
 
 /* Newexpense CSS */
 .newExpenseCont{
-    background: #607D8B;
+    background: #ffffff;
     padding-top: 20px;
     padding-bottom: 20px;
-    box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 8px;
 }
 
 .newExpenseTitle{
@@ -130,15 +136,15 @@ input{
 }
 
 .btnSubmit {
-	display: inline-block;
+        display: inline-block;
     margin: 0;
-	border: 0;
+        border: 0;
     padding: 3px;
-	background-color: #1DE9B6;
-	color:  #263238;
-	text-decoration: none;
-	font-weight: 700;
-	font-size: 1rem;
+        background-color: var(--primary-color);
+        color:  #ffffff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
     line-height: 1.5;
 	font-family: "Helvetica Neue", Arial, sans-serif;
 	cursor: pointer;
@@ -148,15 +154,15 @@ input{
 }
 
 .btnClear {
-	display: inline-block;
+        display: inline-block;
     margin: 0;
-	border: 0;
+        border: 0;
     padding: 3px;
-	background-color: #FF1744;
-	color: #263238;
-	text-decoration: none;
-	font-weight: 700;
-	font-size: 1rem;
+        background-color: var(--danger-color);
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
     line-height: 1.5;
 	font-family: "Helvetica Neue", Arial, sans-serif;
 	cursor: pointer;
@@ -169,11 +175,12 @@ input{
     display: flex;
     align-items: center;
     justify-content: space-around;
-    background-color: #263238;
+    background-color: #ffffff;
     margin: 15px 10px 10px;
     overflow: hidden;
     width: 250px;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    border-radius: 6px;
 }
 
 .expenseIcon{
@@ -181,15 +188,15 @@ input{
 }
 
 .chartBtn {
-	display: inline-block;
+        display: inline-block;
     margin: 0;
-	border: 0;
+        border: 0;
     padding: 3px;
-	background-color: #546E7A;
-	color: white;
-	text-decoration: none;
-	font-weight: 500;
-	font-size: 0.9rem;
+        background-color: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
     line-height: 1.5;
 	font-family: "Helvetica Neue", Arial, sans-serif;
 	cursor: pointer;
@@ -198,7 +205,7 @@ input{
 }
 
 .chartBtn:focus {
-    background-color: #000000;
+    background-color: #084298;
 }
 
 .login{
@@ -218,4 +225,5 @@ input{
 .loginMsg{
     text-align: center;
     font-size: 1.2rem;
+    color: var(--text-color);
 }

@@ -73,21 +73,21 @@ export default function Detailedview({name, amount, date, note, category, nonSpl
                 <p>{newAmount}€ on {category ? category : "Supermarket"}</p>
                 <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center"}}>
                     {note ? <p style={{marginTop:"-5px", textAlign:"center"}}>Note: {note}</p> : ""}
-                    {nonSplit === true ? <p style={{marginTop:"-5px", textAlign:"center", color:"RGB(70,61,134)", backgroundColor:"white", width:"90%", fontWeight:700, borderRadius:"2px"}}>Purchase made for the other user</p> : ""}
+                    {nonSplit === true ? <p style={{marginTop:"-5px", textAlign:"center", color:"RGB(70,61,134)", backgroundColor:"white", width:"90%", fontWeight:700, borderRadius:"4px"}}>Purchase made for the other user</p> : ""}
                 </div>
                 <div>
-                    <button style={{backgroundColor:"LightGray", border:"none", color:"black", borderRadius:"2px", minWidth:"40px"}} onClick={()=>{optionsView === false ? setOptionsView(true) : setOptionsView(false)}}>{optionsIcon}</button>
+                    <button style={{backgroundColor:"#e9ecef", border:"none", color:"black", borderRadius:"4px", minWidth:"40px"}} onClick={()=>{optionsView === false ? setOptionsView(true) : setOptionsView(false)}}>{optionsIcon}</button>
                 </div>
                 {optionsView && (
                     <>
-                        <button style={{backgroundColor:"#1DE9B6", border:"none", color:"#263238", marginTop:"20px", marginBottom:"5px", borderRadius:"2px", marginRight:"5px"}} onClick={()=>setEditMode(!editMode)}>Edit amount</button>
-                        <button style={{backgroundColor:"#f44336", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"2px"}} onClick={confirmDelete}>Delete entry</button>
+                        <button style={{backgroundColor:"var(--primary-color)", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"4px", marginRight:"5px"}} onClick={()=>setEditMode(!editMode)}>Edit amount</button>
+                        <button style={{backgroundColor:"var(--danger-color)", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"4px"}} onClick={confirmDelete}>Delete entry</button>
                     </>
                 )}
                 {editMode && (
                     <div style={{display:"flex", alignItems:"center", marginTop:"10px"}}>
                         <input type="number" value={newAmount} onChange={(e)=>setNewAmount(e.target.value)} style={{width:"60px", marginRight:"5px"}} />
-                        <button style={{backgroundColor:"#1DE9B6", border:"none", color:"#263238", borderRadius:"2px"}} onClick={()=>{updateEntry(docId, newAmount); setEditMode(false); setOptionsView(false);}}>Save</button>
+                        <button style={{backgroundColor:"var(--primary-color)", border:"none", color:"white", borderRadius:"4px"}} onClick={()=>{updateEntry(docId, newAmount); setEditMode(false); setOptionsView(false);}}>Save</button>
                     </div>
                 )}
             </div>
