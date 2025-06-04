@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext } from 'react';
 import { db } from "../components/firebase/firestore";
-import { collection, getDocs, getDoc, doc, query, addDoc, deleteDoc} from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, query, addDoc, deleteDoc, updateDoc } from "firebase/firestore";
 import { AuthContext } from '../Context/AuthContext';
 
 export const FireContext = createContext();
@@ -73,6 +73,25 @@ export default function FireProvider({children}){
         }
     };
 
+    const updateEntry = async (docId, newAmount) => {
+
+        if (cUser && cUser.uid){
+            const uid = cUser.uid;
+
+            const docRef = doc(db, "expenses", uid, "monthly", docId);
+
+            try {
+                await updateDoc(docRef, { amount: newAmount });
+                fetchData();
+                const today = new Date().getTime()/1000;
+                updateCValue(today);
+            } catch (err) {
+                console.log(err.message);
+            }
+
+        }
+    };
+
     const isThisMonth = (i, date) => {
         const today = new Date(0);
         today.setUTCSeconds(date);
@@ -90,7 +109,7 @@ export default function FireProvider({children}){
     }; 
 
     return (
-        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names, deleteEntry}}>
+        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names, deleteEntry, updateEntry}}>
             {children}
         </FireContext.Provider>
     )
