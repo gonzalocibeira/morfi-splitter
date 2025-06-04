@@ -1,11 +1,14 @@
 import React, { useContext, useState } from 'react';
 import { Supermarket, Food, Utilities, Other } from '../../assets/icons';
 import { FireContext } from "../../Context/FireContext";
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 
 export default function Detailedview({name, amount, date, note, category, nonSplit, docId}) {
 
     const { names, deleteEntry, updateEntry } = useContext(FireContext);
+    const delSwal = withReactContent(Swal);
 
     const expDate = new Date(0);
     expDate.setUTCSeconds(date);
@@ -17,6 +20,23 @@ export default function Detailedview({name, amount, date, note, category, nonSpl
     const [optionsView, setOptionsView] = useState();
     const [editMode, setEditMode] = useState(false);
     const [newAmount, setNewAmount] = useState(amount);
+
+    const confirmDelete = () => {
+        delSwal.fire({
+            title: <strong>Are you sure?</strong>,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#f44336',
+            cancelButtonColor: '#B0BEC5',
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            width: '90vw'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteEntry(docId);
+            }
+        });
+    };
 
     let optionsIcon = "▼";
     let expenseIcon = "";
@@ -61,7 +81,7 @@ export default function Detailedview({name, amount, date, note, category, nonSpl
                 {optionsView && (
                     <>
                         <button style={{backgroundColor:"#1DE9B6", border:"none", color:"#263238", marginTop:"20px", marginBottom:"5px", borderRadius:"2px", marginRight:"5px"}} onClick={()=>setEditMode(!editMode)}>Edit amount</button>
-                        <button style={{backgroundColor:"#f44336", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"2px"}} onClick={()=>{deleteEntry(docId)}}>Delete entry</button>
+                        <button style={{backgroundColor:"#f44336", border:"none", color:"white", marginTop:"20px", marginBottom:"5px", borderRadius:"2px"}} onClick={confirmDelete}>Delete entry</button>
                     </>
                 )}
                 {editMode && (
