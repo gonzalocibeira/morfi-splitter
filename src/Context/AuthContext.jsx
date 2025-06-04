@@ -12,7 +12,7 @@ export default function AuthProvider({children}){
 
     const [usrEmail, setUsrEmail] = useState("");
     const [usrPassword, setUsrPassword] = useState("");
-    const [cUser, setCUser] = useState({});
+    const [cUser, setCUser] = useState(null);
 
     const login = async () => {
         try {
@@ -31,7 +31,7 @@ export default function AuthProvider({children}){
 
     const logout = async () => {
         await signOut(auth);
-        setCUser();
+        setCUser(null);
         authSwal.fire({
             title: <strong>Logged out successfully.</strong>,
             icon: 'info'

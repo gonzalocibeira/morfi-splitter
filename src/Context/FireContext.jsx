@@ -39,7 +39,7 @@ export default function FireProvider({children}){
     };
 
     const fetchData = async() => {
-        if (cUser){
+        if (cUser && cUser.uid){
             const uid = cUser.uid;
 
             setNames([]);
@@ -56,7 +56,7 @@ export default function FireProvider({children}){
 
     const deleteEntry = async (docId) => {
 
-        if (cUser){
+        if (cUser && cUser.uid){
             const uid = cUser.uid;
 
             const docRef = doc(db, "expenses", uid, "monthly", docId);
