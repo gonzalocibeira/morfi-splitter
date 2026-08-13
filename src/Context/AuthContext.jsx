@@ -1,46 +1,80 @@
-import React, { createContext, useState } from 'react';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { auth } from "../components/firebase/firestore";
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content'
+import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { auth, firebaseConfigurationError } from "../components/firebase/firestore";
 
-const authSwal = withReactContent(Swal);
+export const AuthContext = createContext(null);
 
-export const AuthContext = createContext();
+function readableAuthError(error) {
+    if (error?.code === "auth/invalid-credential" || error?.code === "auth/wrong-password") {
+        return "The email or password is incorrect.";
+    }
 
-export default function AuthProvider({children}){
+    return error?.message || "Authentication failed. Please try again.";
+}
 
-    const [usrEmail, setUsrEmail] = useState("");
-    const [usrPassword, setUsrPassword] = useState("");
-    const [cUser, setCUser] = useState(null);
+export default function AuthProvider({ children }) {
+    const [user, setUser] = useState(null);
+    const [isAuthReady, setIsAuthReady] = useState(false);
+    const [isAuthenticating, setIsAuthenticating] = useState(false);
+    const [error, setError] = useState(firebaseConfigurationError);
 
-    const login = async () => {
-        try {
-            const user = await signInWithEmailAndPassword(auth, usrEmail, usrPassword);
-            authSwal.fire({
-                title: <strong>Welcome back {usrEmail}!</strong>,
-                icon: 'success'
-            })
-        } catch (err) {
-            authSwal.fire({
-                title: <strong>Wrong user or password.</strong>,
-                icon: 'error'
-            })
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            (currentUser) => {
+                setUser(currentUser);
+                setIsAuthReady(true);
+            },
+            (authError) => {
+                setError(readableAuthError(authError));
+                setIsAuthReady(true);
+            }
+        );
+
+        return unsubscribe;
+    }, []);
+
+    const login = useCallback(async (email, password) => {
+        if (firebaseConfigurationError) {
+            setError(firebaseConfigurationError);
+            throw new Error(firebaseConfigurationError);
         }
-    };
 
-    const logout = async () => {
-        await signOut(auth);
-        setCUser(null);
-        authSwal.fire({
-            title: <strong>Logged out successfully.</strong>,
-            icon: 'info'
-        })
-    };
+        setIsAuthenticating(true);
+        setError(null);
+        try {
+            await signInWithEmailAndPassword(auth, email.trim(), password);
+        } catch (loginError) {
+            const message = readableAuthError(loginError);
+            setError(message);
+            throw new Error(message);
+        } finally {
+            setIsAuthenticating(false);
+        }
+    }, []);
 
-    return (
-        <AuthContext.Provider value={{auth, usrEmail, setUsrEmail, usrPassword, setUsrPassword, cUser, setCUser, login, logout}}>
-            {children}
-        </AuthContext.Provider>
-    )
+    const logout = useCallback(async () => {
+        setIsAuthenticating(true);
+        setError(null);
+        try {
+            await signOut(auth);
+        } catch (logoutError) {
+            const message = readableAuthError(logoutError);
+            setError(message);
+            throw new Error(message);
+        } finally {
+            setIsAuthenticating(false);
+        }
+    }, []);
+
+    const value = useMemo(() => ({
+        user,
+        isAuthReady,
+        isAuthenticating,
+        error,
+        login,
+        logout
+    }), [error, isAuthReady, isAuthenticating, login, logout, user]);
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

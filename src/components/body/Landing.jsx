@@ -1,60 +1,102 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FireContext } from "../../Context/FireContext";
-import { AuthContext } from '../../Context/AuthContext';
-import { onAuthStateChanged } from 'firebase/auth';
+import { AuthContext } from "../../Context/AuthContext";
+import { monthKeyFromDate } from "../../domain/months";
+import { formatCents } from "../../domain/money";
 
 export default function Landing() {
-
-    const {dataArr, cValue, updateCValue, fetchData} = useContext(FireContext);
-    const {auth, setUsrEmail, setUsrPassword, cUser, setCUser, login, logout} = useContext(AuthContext);
-
-    const today = new Date().getTime()/1000;
-
-    useEffect(() => {
-        onAuthStateChanged(auth, (currentUser) => {setCUser(currentUser)});
-    }, []);
+    const { user, isAuthReady, isAuthenticating, error, login, logout } = useContext(AuthContext);
+    const { getMonth, loadMonth, profileError } = useContext(FireContext);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const currentMonthKey = monthKeyFromDate(new Date());
+    const currentMonth = getMonth(currentMonthKey);
 
     useEffect(() => {
-        fetchData();
-    }, [cUser]);
+        if (user?.uid) {
+            loadMonth(currentMonthKey).catch(() => undefined);
+        }
+    }, [currentMonthKey, loadMonth, user]);
 
-    useEffect(() => {
-        updateCValue(today)
-    }, [dataArr]);
+    const totalCents = useMemo(
+        () => currentMonth.expenses.reduce((total, expense) => total + expense.amountCents, 0),
+        [currentMonth.expenses]
+    );
 
-    return (
-        <>
-            {cUser ? 
-            <div style={{display:"flex", flexDirection:"column", justifyContent:"space-between", height:"500px"}}>
+    const handleLogin = async (event) => {
+        event.preventDefault();
+        try {
+            await login(email, password);
+            setPassword("");
+        } catch {
+            // The provider exposes the user-facing error.
+        }
+    };
+
+    if (!isAuthReady) {
+        return <p className="statusMsg">Restoring your session…</p>;
+    }
+
+    if (user) {
+        return (
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "500px" }}>
                 <div style={flexCenter}>
-                    <h2 style={{fontSize:"25px"}}>
-                        The total spent this month is:
-                    </h2>
-                    <h2 style={{fontSize:"50px", borderBottom:"1.5px solid white", margin:"0"}}>
-                        {cValue}€
-                    </h2>
+                    <h2 style={{ fontSize: "25px" }}>The total spent this month is:</h2>
+                    {currentMonth.status === "loading" && <p>Loading expenses…</p>}
+                    {currentMonth.status === "error" && (
+                        <div className="errorMsg" role="alert">
+                            <p>{currentMonth.error}</p>
+                            <button onClick={() => loadMonth(currentMonthKey, { force: true }).catch(() => undefined)}>Retry</button>
+                        </div>
+                    )}
+                    {currentMonth.status !== "error" && (
+                        <h2 style={{ fontSize: "50px", borderBottom: "1.5px solid white", margin: 0 }}>
+                            {formatCents(totalCents)}
+                        </h2>
+                    )}
+                    {profileError && <p className="errorMsg" role="alert">{profileError}</p>}
                 </div>
                 <div style={flexCenter}>
-                    <p>Logged in as <strong>{cUser.email}</strong></p>
-                    <button className="btnClear" onClick={logout}>Logout</button>
-                </div>
-            </div> : 
-            <div>
-                <p className="loginMsg">Please login to use Morfi Splitter</p>
-                <div className="login">
-                    <input type="email" placeholder="email" onChange={(e) => setUsrEmail(e.target.value)}/>
-                    <input type="password" placeholder="password" onChange={(e) => setUsrPassword(e.target.value)}/>
-                    <button className="btnSubmit" onClick={login}>Login</button>
+                    <p>Logged in as <strong>{user.email}</strong></p>
+                    <button className="btnClear" disabled={isAuthenticating} onClick={() => logout().catch(() => undefined)}>
+                        {isAuthenticating ? "Logging out…" : "Logout"}
+                    </button>
                 </div>
             </div>
-            }
-        </>
-    )
+        );
+    }
+
+    return (
+        <div>
+            <p className="loginMsg">Please login to use Morfi Splitter</p>
+            <form className="login" onSubmit={handleLogin}>
+                <input
+                    type="email"
+                    value={email}
+                    placeholder="email"
+                    autoComplete="email"
+                    required
+                    onChange={(event) => setEmail(event.target.value)}
+                />
+                <input
+                    type="password"
+                    value={password}
+                    placeholder="password"
+                    autoComplete="current-password"
+                    required
+                    onChange={(event) => setPassword(event.target.value)}
+                />
+                <button className="btnSubmit" type="submit" disabled={isAuthenticating}>
+                    {isAuthenticating ? "Logging in…" : "Login"}
+                </button>
+            </form>
+            {error && <p className="errorMsg" role="alert">{error}</p>}
+        </div>
+    );
 }
 
-// Styles
 const flexCenter = {
-    display:"flex",
-    flexDirection:"column",
-    alignItems:"center"
-}
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
+};

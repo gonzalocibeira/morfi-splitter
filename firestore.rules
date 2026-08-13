@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function validExpense(userId) {
+      return request.resource.data.keys().hasOnly([
+          'name', 'amountCents', 'date', 'note', 'category', 'nonSplit'
+        ])
+        && request.resource.data.keys().hasAll([
+          'name', 'amountCents', 'date', 'note', 'category', 'nonSplit'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name in get(/databases/$(database)/documents/users/$(userId)).data.names
+        && request.resource.data.amountCents is int
+        && request.resource.data.amountCents > 0
+        && request.resource.data.date is timestamp
+        && request.resource.data.note is string
+        && request.resource.data.category is string
+        && request.resource.data.category.size() > 0
+        && request.resource.data.nonSplit is bool;
+    }
+
+    match /users/{userId} {
+      allow read: if owns(userId);
+      allow write: if false;
+    }
+
+    match /expenses/{userId}/monthly/{expenseId} {
+      allow read: if owns(userId);
+      allow create: if owns(userId) && validExpense(userId);
+      allow update: if owns(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['amount', 'amountCents'])
+        && request.resource.data.amountCents is int
+        && request.resource.data.amountCents > 0
+        && !request.resource.data.keys().hasAny(['amount']);
+      allow delete: if owns(userId);
+    }
+  }
+}
