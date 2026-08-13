@@ -70,8 +70,8 @@ export default function Newexpense() {
             <div className="newExpenseCont">
                 <form className="expenseForm" onSubmit={handleSubmit}>
                     <div className="newExpenseForm">
-                        <div>
-                            <label>
+                        <div className="expenseFields">
+                            <label className="expenseField expenseParticipantField">
                                 <span className="srOnly">Participant</span>
                                 <select
                                     value={form.participantName}
@@ -84,9 +84,8 @@ export default function Newexpense() {
                                     ))}
                                 </select>
                             </label>
-                            <label>&nbsp;spent&nbsp;
+                            <label className="expenseField expenseAmountField">spent
                                 <input
-                                    style={{ width: 70 }}
                                     type="number"
                                     inputMode="decimal"
                                     min="0.01"
@@ -96,7 +95,7 @@ export default function Newexpense() {
                                     onChange={(event) => setField("amount", event.target.value)}
                                 />
                             </label>
-                            <label>€ on&nbsp;
+                            <label className="expenseField expenseCategoryField">€ on
                                 <select value={form.category} onChange={(event) => setField("category", event.target.value)}>
                                     <option value="Supermarket">Supermarket</option>
                                     <option value="Food">Food</option>
@@ -105,7 +104,7 @@ export default function Newexpense() {
                                 </select>
                             </label>
                         </div>
-                        <div style={{ marginTop: 15 }}>
+                        <div className="nonSplitField">
                             <label>Don't split, charge in full to the other person!
                                 <input
                                     type="checkbox"
@@ -114,13 +113,13 @@ export default function Newexpense() {
                                 />
                             </label>
                         </div>
-                        <div style={{ marginTop: 15, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div className="expenseNoteField">
                             <label>
                                 <span className="srOnly">Note</span>
                                 <textarea
                                     placeholder="Write a note (optional)"
                                     rows={5}
-                                    cols={42}
+                                    className="expenseNote"
                                     value={form.note}
                                     onChange={(event) => setField("note", event.target.value)}
                                 />

@@ -94,8 +94,7 @@ footer{
 /* Newexpense CSS */
 .newExpenseCont{
     background: #607D8B;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding: 20px 16px;
     box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
 }
 
@@ -115,10 +114,87 @@ footer{
 
 .newExpenseForm{
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     font-size: 16px;
     font-weight: 700;
+}
+
+.expenseForm {
+    width: min(100%, 640px);
+    margin: 0 auto;
+}
+
+.expenseFields,
+.expenseField,
+.expenseNoteField {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.expenseFields {
+    gap: 6px;
+}
+
+.expenseField {
+    gap: 4px;
+}
+
+.expenseAmountField input {
+    width: 70px;
+}
+
+.nonSplitField {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.expenseNoteField {
+    align-self: stretch;
+    margin-top: 15px;
+}
+
+.expenseNoteField label {
+    width: min(100%, 360px);
+}
+
+.expenseNote {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    resize: vertical;
+}
+
+@media (max-width: 600px) {
+    .newExpenseTitle {
+        padding: 0 16px;
+        text-align: center;
+    }
+
+    .expenseFields {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .expenseField {
+        width: 100%;
+    }
+
+    .expenseParticipantField select,
+    .expenseCategoryField select {
+        width: min(100%, 260px);
+    }
+
+    .nonSplitField label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
 }
 
 select{
