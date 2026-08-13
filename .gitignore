@@ -25,3 +25,6 @@ firestore-debug.log
 
 # keys
 .env
+
+# Local Netlify state
+.netlify
