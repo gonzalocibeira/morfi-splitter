@@ -1,106 +1,105 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FireContext } from "../../Context/FireContext";
 import MonthPicker from "react-simple-month-picker";
-
-
+import { calculateSettlement } from "../../domain/expenses";
+import { formatCents } from "../../domain/money";
+import { formatMonthKey, monthKeyFromDate } from "../../domain/months";
 
 export default function Splitexpense() {
-
-    const {dataArr, cValue, updateCValue, fetchData, isThisMonth, names} = useContext(FireContext);
-    const [selectedMonth, setSelectedMonth] = useState("");
-    const [u1Value, setU1Value] = useState(0);
-    const [u2Value, setU2Value] = useState(0);
-    const [u1NoSplit, setU1NoSplit] = useState(0);
-    const [u2NoSplit, setU2NoSplit] = useState(0);
-    const [debtMsg, setDebtMsg] = useState("");
-    const [classSwitch, setClassSwitch] = useState("");
-
-    const updatePValue = (name, date) => {
-        let acc = 0;
-        let acc2 = 0;
-
-        const onlySplittableDataArr = dataArr.filter(obj => !obj.data.hasOwnProperty("nonSplit") || obj.data.nonSplit === false);
-        onlySplittableDataArr.forEach((i) => {
-            if (isThisMonth(i, date) && i.data.name === name) {
-                acc += Number(i.data.amount)
-            }
-        });
-
-        const onlyNonSplittableDataArr = dataArr.filter(obj => obj.data.nonSplit === true);
-        onlyNonSplittableDataArr.forEach((i) => {
-            if (isThisMonth(i, date) && i.data.name === name) {
-                acc2 += Number(i.data.amount)
-            }
-        })
-
-        if (name === names[0]){
-            setU1Value(Number(acc.toFixed(2)));
-            setU1NoSplit(Number(acc2.toFixed(2)))
-        } else {
-            setU2Value(Number(acc.toFixed(2)));
-            setU2NoSplit(Number(acc2.toFixed(2)))    
-        };
-    };
-
-    const debtCalc = () => {
-        const substractSplitOnly = u1Value - u2Value;
-
-        const owedPartial = Number((substractSplitOnly/2).toFixed(2)) + u1NoSplit - u2NoSplit;
-        const owed = Number(Math.abs(owedPartial))
-
-        if (owedPartial === 0) {setDebtMsg("No one owes the other "); setClassSwitch("no")};
-        if (owedPartial > 0) {let msg = `${names[1]} owes ${names[0]} ${owed}€`; setDebtMsg(msg); setClassSwitch("t")};
-        if (owedPartial < 0) {let msg = `${names[0]} owes ${names[1]} ${owed} €`; setDebtMsg(msg); setClassSwitch("n")};
-    };
+    const { participants, profileStatus, profileError, getMonth, loadMonth } = useContext(FireContext);
+    const [selectedMonth, setSelectedMonth] = useState(null);
+    const monthState = selectedMonth ? getMonth(selectedMonth) : null;
+    const settlement = useMemo(
+        () => calculateSettlement(monthState?.expenses || [], participants),
+        [monthState?.expenses, participants]
+    );
 
     useEffect(() => {
-        fetchData()
-    }, []);
+        if (selectedMonth) {
+            loadMonth(selectedMonth).catch(() => undefined);
+        }
+    }, [loadMonth, selectedMonth]);
 
-    useEffect(() => {
-        updateCValue(selectedMonth);
-        updatePValue(names[0], selectedMonth);
-        updatePValue(names[1], selectedMonth);
+    const [first, second] = participants;
+    const firstTotal = settlement.totals[first] || { sharedCents: 0, nonSplitCents: 0 };
+    const secondTotal = settlement.totals[second] || { sharedCents: 0, nonSplitCents: 0 };
+    let debtMessage = "No one owes the other";
+    let classSwitch = "no";
+    if (settlement.owedCents > 0) {
+        debtMessage = `${second} owes ${first} ${formatCents(settlement.owedCents)}`;
+        classSwitch = "t";
+    } else if (settlement.owedCents < 0) {
+        debtMessage = `${first} owes ${second} ${formatCents(Math.abs(settlement.owedCents))}`;
+        classSwitch = "n";
+    }
 
-    }, [dataArr, selectedMonth]);
+    if (profileStatus === "loading") {
+        return <p className="statusMsg">Loading household profile…</p>;
+    }
 
-    useEffect(() => {
-        debtCalc()
-    }, [u1Value, u2Value]);
-
-
+    if (profileError || participants.length !== 2) {
+        return <p className="errorMsg" role="alert">{profileError || "Two participants are required to split expenses."}</p>;
+    }
 
     return (
         <>
             <div className="splitDate">
                 <h2>Select date</h2>
-                <MonthPicker onChange={(date)=>setSelectedMonth(date/1000)}/>
+                <MonthPicker onChange={(date) => setSelectedMonth(monthKeyFromDate(date))} />
             </div>
-            <div className="splitCont">
-                <div className="splitTotal">
-                    <p>Selected month total: {cValue}€</p>
+            {!selectedMonth && <p className="statusMsg">Please select a month.</p>}
+            {monthState?.status === "loading" && <p className="statusMsg">Loading expenses…</p>}
+            {monthState?.status === "error" && (
+                <div className="errorMsg" role="alert">
+                    <p>{monthState.error}</p>
+                    <button onClick={() => loadMonth(selectedMonth, { force: true }).catch(() => undefined)}>Retry</button>
                 </div>
-                <div className="splitNames">
-                    <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", width:"90%"}}>
-                        <h4>Shared expenses</h4>
-                        <div style={{display:"flex", justifyContent:"space-around", width:"100%"}}>
-                            <p>{names[0]} spent: {u1Value}€</p>
-                            <p>{names[1]} spent: {u2Value}€</p>
+            )}
+            {selectedMonth && monthState?.status === "success" && (
+                <div className="splitCont">
+                    <div className="splitTotal">
+                        <p>{formatMonthKey(selectedMonth)} total: {formatCents(settlement.totalCents)}</p>
+                    </div>
+                    <div className="splitNames">
+                        <div style={totalsGroupStyle}>
+                            <h4>Shared expenses</h4>
+                            <div style={totalsRowStyle}>
+                                <p>{first} spent: {formatCents(firstTotal.sharedCents)}</p>
+                                <p>{second} spent: {formatCents(secondTotal.sharedCents)}</p>
+                            </div>
+                        </div>
+                        <div style={{ ...totalsGroupStyle, marginTop: 15 }}>
+                            <h4>Purchases made on behalf of the other</h4>
+                            <div style={totalsRowStyle}>
+                                <p>{first} spent: {formatCents(firstTotal.nonSplitCents)}</p>
+                                <p>{second} spent: {formatCents(secondTotal.nonSplitCents)}</p>
+                            </div>
                         </div>
                     </div>
-                    <div style={{display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", width:"90%", marginTop:15, }}>
-                        <h4>Purchases made on behalf of the other</h4>
-                        <div style={{display:"flex", justifyContent:"space-around", width:"100%"}}>
-                            <p>{names[0]} spent: {u1NoSplit}€</p>
-                            <p>{names[1]} spent: {u2NoSplit}€</p>
-                        </div>
+                    <div className="splitFlow">
+                        <span className={classSwitch === "t" ? "activeArrow" : "inactiveArrow"}>←</span>
+                        <span className={classSwitch === "no" ? "activeArrow" : "inactiveArrow"}>-</span>
+                        <span className={classSwitch === "n" ? "activeArrow" : "inactiveArrow"}>→</span>
+                        <p>{debtMessage}</p>
                     </div>
+                    {monthState.expenses.length === 0 && <p className="statusMsg">There are no expenses in this month.</p>}
+                    {monthState.invalidCount > 0 && <p className="errorMsg">{monthState.invalidCount} malformed expense record(s) were skipped.</p>}
                 </div>
-                <div className="splitFlow">
-                    <span className={`${classSwitch === "t"? "activeArrow" : "inactiveArrow"}`}>←</span><span className={`${classSwitch === "no"? "activeArrow" : "inactiveArrow"}`}>-</span><span className={`${classSwitch === "n"? "activeArrow" : "inactiveArrow"}`}>→</span>
-                    <p>{debtMsg}</p>
-                </div>
-            </div>
+            )}
         </>
-    )
+    );
 }
+
+const totalsGroupStyle = {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    width: "90%"
+};
+
+const totalsRowStyle = {
+    display: "flex",
+    justifyContent: "space-around",
+    width: "100%"
+};

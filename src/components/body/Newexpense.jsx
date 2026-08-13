@@ -1,65 +1,66 @@
-import React, { useState, useContext } from 'react';
-import { db } from "../firebase/firestore";
-import { collection, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "firebase/firestore";
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
+import React, { useContext, useState } from "react";
 import { FireContext } from "../../Context/FireContext";
-import { AuthContext } from '../../Context/AuthContext';
+import { parseMoneyToCents } from "../../domain/money";
+
+const INITIAL_FORM = {
+    participantName: "",
+    amount: "",
+    category: "Supermarket",
+    note: "",
+    nonSplit: false
+};
 
 export default function Newexpense() {
+    const { participants, profileStatus, profileError, createExpense, mutationState } = useContext(FireContext);
+    const [form, setForm] = useState(INITIAL_FORM);
+    const [formError, setFormError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [isLocallySubmitting, setIsLocallySubmitting] = useState(false);
+    const isSubmitting = isLocallySubmitting || (mutationState.pending && mutationState.id === "create");
 
-    const { names } = useContext(FireContext);
-    const { cUser }  = useContext(AuthContext);
-
-
-    const valSwal = withReactContent(Swal);
-
-    const [usrName, setUsrName] = useState("");
-    const [usrExp, setUsrExp] = useState("");
-    const [usrCategory, setUsrCategory] = useState("Supermarket");
-    const [usrNote, setUsrNote] = useState("");
-    const [nonSplitable, setNonSplitable] = useState(false);
-
-    const addExpense = async () => {
-
-        if (validation()){
-            const uid = cUser.uid
-            const expCollection = collection(db, "expenses", uid, "monthly")
-            await addDoc(expCollection, {
-                name:usrName,
-                amount:usrExp,
-                date:serverTimestamp(),
-                note:usrNote,
-                category:usrCategory,
-                nonSplit:nonSplitable
-            });
-            valSwal.fire({
-                title: <strong>Expense added!</strong>,
-                icon: 'success'
-            });
-            clear()
-        } else {
-            valSwal.fire({
-                title: <strong>Please fill in name & amount</strong>,
-                icon: 'error'
-            });
-        }
-
+    const setField = (field, value) => {
+        setForm((current) => ({ ...current, [field]: value }));
+        setFormError(null);
+        setSuccessMessage(null);
     };
 
-    const validation = () => {
-        if (usrName !== "" && usrExp > 0){
-            return true
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (isSubmitting) {
+            return;
+        }
+
+        const amountCents = parseMoneyToCents(form.amount);
+        if (!participants.includes(form.participantName) || !amountCents) {
+            setFormError("Choose a participant and enter a positive amount with no more than two decimals.");
+            return;
+        }
+
+        try {
+            setIsLocallySubmitting(true);
+            await createExpense({
+                participantName: form.participantName,
+                amountCents,
+                category: form.category,
+                note: form.note.trim(),
+                nonSplit: form.nonSplit
+            });
+            setForm(INITIAL_FORM);
+            setSuccessMessage("Expense added.");
+        } catch (error) {
+            setFormError(error.message);
+        } finally {
+            setIsLocallySubmitting(false);
         }
     };
 
-    const clear = () => {
-        setUsrName("");
-        setUsrExp("");
-        setUsrCategory("Supermarket");
-        setUsrNote("")
-        setNonSplitable(false)
-    };
+    if (profileStatus === "loading") {
+        return <p className="statusMsg">Loading household profile…</p>;
+    }
+
+    if (profileError || participants.length !== 2) {
+        return <p className="errorMsg" role="alert">{profileError || "Two participants are required before adding expenses."}</p>;
+    }
 
     return (
         <>
@@ -67,21 +68,36 @@ export default function Newexpense() {
                 <h2>↓ Input new expense ↓</h2>
             </div>
             <div className="newExpenseCont">
-                <div className="newExpenseForm">
-                    <form className="expenseForm">
+                <form className="expenseForm" onSubmit={handleSubmit}>
+                    <div className="newExpenseForm">
                         <div>
-                            <label>&nbsp;
-                                <select  value={usrName} onChange={(e) => setUsrName(e.target.value)}>
-                                    <option value="-">-</option>
-                                    <option value={names[0]}>{names[0]}</option>
-                                    <option value={names[1]}>{names[1]}</option>
+                            <label>
+                                <span className="srOnly">Participant</span>
+                                <select
+                                    value={form.participantName}
+                                    required
+                                    onChange={(event) => setField("participantName", event.target.value)}
+                                >
+                                    <option value="">Choose a participant</option>
+                                    {participants.map((participant) => (
+                                        <option key={participant} value={participant}>{participant}</option>
+                                    ))}
                                 </select>
                             </label>
                             <label>&nbsp;spent&nbsp;
-                                <input style={{width:50}} type="number" value={usrExp} onChange={(e) => setUsrExp(e.target.value)} />
+                                <input
+                                    style={{ width: 70 }}
+                                    type="number"
+                                    inputMode="decimal"
+                                    min="0.01"
+                                    step="0.01"
+                                    value={form.amount}
+                                    required
+                                    onChange={(event) => setField("amount", event.target.value)}
+                                />
                             </label>
                             <label>€ on&nbsp;
-                                <select value={usrCategory} onChange={(e) => setUsrCategory(e.target.value)}>
+                                <select value={form.category} onChange={(event) => setField("category", event.target.value)}>
                                     <option value="Supermarket">Supermarket</option>
                                     <option value="Food">Food</option>
                                     <option value="Utilities">Utilities</option>
@@ -89,23 +105,40 @@ export default function Newexpense() {
                                 </select>
                             </label>
                         </div>
-                        <div style={{marginTop:15}}>
+                        <div style={{ marginTop: 15 }}>
                             <label>Don't split, charge in full to the other person!
-                                <input type="checkbox" checked={nonSplitable} onChange={(e) => setNonSplitable(e.target.checked)}/>
+                                <input
+                                    type="checkbox"
+                                    checked={form.nonSplit}
+                                    onChange={(event) => setField("nonSplit", event.target.checked)}
+                                />
                             </label>
                         </div>
-                        <div style={{marginTop:15, display:"flex", alignItems:"center", justifyContent:"center"}}>
+                        <div style={{ marginTop: 15, display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <label>
-                                <textarea placeholder="Write a note (optional)" rows={5} cols={42} value={usrNote} onChange={(e) => setUsrNote(e.target.value)}/>
+                                <span className="srOnly">Note</span>
+                                <textarea
+                                    placeholder="Write a note (optional)"
+                                    rows={5}
+                                    cols={42}
+                                    value={form.note}
+                                    onChange={(event) => setField("note", event.target.value)}
+                                />
                             </label>
                         </div>
-                    </form>
-                </div>
-                <div className="newExpenseBtns">
-                    <button onClick={()=>clear()} className="btnClear">Clear</button>
-                    <button onClick={()=>addExpense()} className="btnSubmit">Submit</button>
-                </div>
+                    </div>
+                    {(formError || mutationState.error) && (
+                        <p className="errorMsg" role="alert">{formError || mutationState.error}</p>
+                    )}
+                    {successMessage && <p className="successMsg" role="status">{successMessage}</p>}
+                    <div className="newExpenseBtns">
+                        <button type="button" onClick={() => setForm(INITIAL_FORM)} className="btnClear" disabled={isSubmitting}>Clear</button>
+                        <button type="submit" className="btnSubmit" disabled={isSubmitting}>
+                            {isSubmitting ? "Saving…" : "Submit"}
+                        </button>
+                    </div>
+                </form>
             </div>
         </>
-    )
+    );
 }

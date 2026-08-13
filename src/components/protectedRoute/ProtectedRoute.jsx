@@ -1,15 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from '../../Context/AuthContext';
+import { AuthContext } from "../../Context/AuthContext";
 
-const ProtectedRoute = ({children}) =>{
+const ProtectedRoute = ({ children }) => {
+    const { user, isAuthReady } = useContext(AuthContext);
 
-    const { cUser }  = useContext(AuthContext);
-
-    if (!cUser || !cUser.uid) {
-        return <Navigate to="/" replace />
+    if (!isAuthReady) {
+        return <p className="statusMsg">Restoring your session…</p>;
     }
-    return children
+
+    if (!user?.uid) {
+        return <Navigate to="/" replace />;
+    }
+
+    return children;
 };
 
 export default ProtectedRoute;

@@ -219,3 +219,42 @@ input{
     text-align: center;
     font-size: 1.2rem;
 }
+
+.statusMsg,
+.errorMsg,
+.successMsg {
+    text-align: center;
+    margin: 20px auto;
+    max-width: 90%;
+}
+
+.errorMsg {
+    color: #ffebee;
+    background: #b71c1c;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.successMsg {
+    color: #1b5e20;
+    background: #c8e6c9;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}

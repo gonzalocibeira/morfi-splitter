@@ -1,116 +1,260 @@
-import React, { createContext, useState, useContext } from 'react';
-import { db } from "../components/firebase/firestore";
-import { collection, getDocs, getDoc, doc, query, addDoc, deleteDoc, updateDoc } from "firebase/firestore";
-import { AuthContext } from '../Context/AuthContext';
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    deleteField,
+    doc,
+    getDoc,
+    getDocs,
+    orderBy,
+    query,
+    serverTimestamp,
+    Timestamp,
+    updateDoc,
+    where
+} from "firebase/firestore";
+import { db, firebaseConfigurationError } from "../components/firebase/firestore";
+import { AuthContext } from "./AuthContext";
+import { normalizeExpenseRecord } from "../domain/expenses";
+import { monthKeyFromDate, monthRangeFromKey } from "../domain/months";
 
-export const FireContext = createContext();
+export const FireContext = createContext(null);
 
-export default function FireProvider({children}){
+const EMPTY_MONTH = Object.freeze({ expenses: [], status: "idle", error: null, invalidCount: 0 });
 
-    const { cUser } = useContext(AuthContext);
+function readableDataError(error) {
+    return error?.message || "Unable to load your expenses. Please try again.";
+}
 
-    const [dataArr, setDataArr] = useState([]);
-    const [cValue, setCValue] = useState("");
-    const [filteredArr, setFilteredArr] = useState([]);
-    const [names, setNames] = useState([]);
+function normalizeParticipants(value) {
+    if (!Array.isArray(value)) {
+        return [];
+    }
 
-    const updateCValue = (date) => {
-        let acc = 0;
-        dataArr.forEach((i) => {
-            if (isThisMonth(i, date)) {
-                acc += Number(i.data.amount)
+    return value
+        .filter((name) => typeof name === "string" && name.trim())
+        .map((name) => name.trim())
+        .slice(0, 2);
+}
+
+export default function FireProvider({ children }) {
+    const { user } = useContext(AuthContext);
+    const [participants, setParticipants] = useState([]);
+    const [profileStatus, setProfileStatus] = useState("idle");
+    const [profileError, setProfileError] = useState(null);
+    const [months, setMonths] = useState({});
+    const [mutationState, setMutationState] = useState({ pending: false, id: null, error: null });
+    const generationRef = useRef(0);
+    const monthsRef = useRef({});
+    const userRef = useRef(user);
+    const requestRef = useRef(0);
+    const monthRequestsRef = useRef({});
+
+    const replaceMonths = useCallback((nextMonths) => {
+        monthsRef.current = nextMonths;
+        setMonths(nextMonths);
+    }, []);
+
+    const updateMonth = useCallback((monthKey, update) => {
+        const current = monthsRef.current[monthKey] || EMPTY_MONTH;
+        const nextEntry = typeof update === "function" ? update(current) : update;
+        replaceMonths({ ...monthsRef.current, [monthKey]: nextEntry });
+    }, [replaceMonths]);
+
+    useEffect(() => {
+        userRef.current = user;
+        generationRef.current += 1;
+        const generation = generationRef.current;
+        replaceMonths({});
+        setParticipants([]);
+        setProfileError(null);
+        setMutationState({ pending: false, id: null, error: null });
+
+        if (!user?.uid) {
+            setProfileStatus("idle");
+            return undefined;
+        }
+
+        setProfileStatus("loading");
+        getDoc(doc(db, "users", user.uid))
+            .then((snapshot) => {
+                if (generationRef.current !== generation) {
+                    return;
+                }
+
+                const names = normalizeParticipants(snapshot.data()?.names);
+                setParticipants(names);
+                if (!snapshot.exists() || names.length !== 2) {
+                    setProfileStatus("error");
+                    setProfileError("This account needs exactly two participant names in its profile.");
+                    return;
+                }
+                setProfileStatus("success");
+            })
+            .catch((error) => {
+                if (generationRef.current === generation) {
+                    setProfileStatus("error");
+                    setProfileError(readableDataError(error));
+                }
+            });
+
+        return undefined;
+    }, [replaceMonths, user]);
+
+    const loadMonth = useCallback(async (monthKey, options = {}) => {
+        const range = monthRangeFromKey(monthKey);
+        const currentUser = userRef.current;
+        if (!range || !currentUser?.uid) {
+            return [];
+        }
+
+        const cached = monthsRef.current[monthKey];
+        if (!options.force && (cached?.status === "success" || cached?.status === "loading")) {
+            return cached.expenses;
+        }
+
+        const generation = generationRef.current;
+        const requestId = ++requestRef.current;
+        monthRequestsRef.current[monthKey] = requestId;
+        updateMonth(monthKey, (current) => ({ ...current, status: "loading", error: null }));
+
+        try {
+            const expensesQuery = query(
+                collection(db, "expenses", currentUser.uid, "monthly"),
+                where("date", ">=", Timestamp.fromDate(range.start)),
+                where("date", "<", Timestamp.fromDate(range.end)),
+                orderBy("date", "asc")
+            );
+            const snapshot = await getDocs(expensesQuery);
+            const normalized = snapshot.docs
+                .map((expenseDoc) => normalizeExpenseRecord(expenseDoc.id, expenseDoc.data()));
+            const expenses = normalized.filter(Boolean);
+
+            if (
+                generationRef.current !== generation
+                || userRef.current?.uid !== currentUser.uid
+                || monthRequestsRef.current[monthKey] !== requestId
+            ) {
+                return expenses;
             }
-        });
-        setCValue(acc.toFixed(2))
-    };
 
-    const filterDataArr = (date) => {
-        setFilteredArr([]);
-        let provisionalFilteredArr = [];
-        dataArr.forEach((i) => {
-            if (isThisMonth(i, date)) {
-                provisionalFilteredArr.push(i)
-            };
-        provisionalFilteredArr.sort((a, b) => {
-            return a.data.date - b.data.date
-        });
-        setFilteredArr(provisionalFilteredArr);
-        })
-    };
-
-    const fetchData = async() => {
-        if (cUser && cUser.uid){
-            const uid = cUser.uid;
-
-            setNames([]);
-            setDataArr([]);
-
-            const q = query(collection(db, "expenses", uid, "monthly"));
-            const expSnap = await getDocs(q);
-            expSnap.forEach((doc) => {setDataArr(dataArr => [...dataArr, { id: doc.id, data: doc.data() }])});
-
-            const snap = await getDoc(doc(db, "users", uid));
-            setNames(snap.data().names);
-        }
-    };
-
-    const deleteEntry = async (docId) => {
-
-        if (cUser && cUser.uid){
-            const uid = cUser.uid;
-
-            const docRef = doc(db, "expenses", uid, "monthly", docId);
-
-            try {
-                await deleteDoc(docRef);
-                fetchData();
-                const today = new Date().getTime()/1000;
-                updateCValue(today)
-            } catch (err) {
-                console.log(err.message)
+            updateMonth(monthKey, {
+                expenses,
+                status: "success",
+                error: null,
+                invalidCount: normalized.length - expenses.length
+            });
+            return expenses;
+        } catch (error) {
+            if (generationRef.current === generation && userRef.current?.uid === currentUser.uid) {
+                updateMonth(monthKey, (current) => ({
+                    ...current,
+                    status: "error",
+                    error: readableDataError(error)
+                }));
             }
-            
+            throw error;
         }
-    };
+    }, [updateMonth]);
 
-    const updateEntry = async (docId, newAmount) => {
-
-        if (cUser && cUser.uid){
-            const uid = cUser.uid;
-
-            const docRef = doc(db, "expenses", uid, "monthly", docId);
-
-            try {
-                await updateDoc(docRef, { amount: newAmount });
-                fetchData();
-                const today = new Date().getTime()/1000;
-                updateCValue(today);
-            } catch (err) {
-                console.log(err.message);
+    const runMutation = useCallback(async (id, action, monthKey) => {
+        const generation = generationRef.current;
+        const userId = userRef.current?.uid;
+        setMutationState({ pending: true, id, error: null });
+        try {
+            await action();
+            if (generationRef.current !== generation || userRef.current?.uid !== userId) {
+                return;
             }
-
+            if (monthKey) {
+                await loadMonth(monthKey, { force: true });
+            }
+            if (generationRef.current === generation && userRef.current?.uid === userId) {
+                setMutationState({ pending: false, id: null, error: null });
+            }
+        } catch (error) {
+            const message = readableDataError(error);
+            if (generationRef.current === generation && userRef.current?.uid === userId) {
+                setMutationState({ pending: false, id: null, error: message });
+            }
+            throw new Error(message);
         }
-    };
+    }, [loadMonth]);
 
-    const isThisMonth = (i, date) => {
-        const today = new Date(0);
-        today.setUTCSeconds(date);
-        const thisMonth = today.getMonth();
-        const thisYear = today.getFullYear();
-
-        const expDate = new Date(0);
-        expDate.setUTCSeconds(i.data.date.seconds);
-        const expMonth = expDate.getMonth();
-        const expYear = expDate.getFullYear();
-
-        if (thisMonth === expMonth && thisYear === expYear) {
-            return true;
+    const createExpense = useCallback(async (input) => {
+        const currentUser = userRef.current;
+        if (!currentUser?.uid || !Number.isSafeInteger(input.amountCents) || input.amountCents <= 0) {
+            throw new Error("The expense data is invalid.");
         }
-    }; 
 
-    return (
-        <FireContext.Provider value={{dataArr, cValue, filteredArr, updateCValue, fetchData, isThisMonth, filterDataArr, names, deleteEntry, updateEntry}}>
-            {children}
-        </FireContext.Provider>
-    )
+        const monthKey = monthKeyFromDate(new Date());
+        await runMutation("create", () => addDoc(
+            collection(db, "expenses", currentUser.uid, "monthly"),
+            {
+                name: input.participantName,
+                amountCents: input.amountCents,
+                date: serverTimestamp(),
+                note: input.note || "",
+                category: input.category || "Other",
+                nonSplit: input.nonSplit === true
+            }
+        ), monthKey);
+    }, [runMutation]);
+
+    const updateExpenseAmount = useCallback(async (id, monthKey, amountCents) => {
+        const currentUser = userRef.current;
+        if (!currentUser?.uid || !id || !Number.isSafeInteger(amountCents) || amountCents <= 0) {
+            throw new Error("Enter a valid positive amount with no more than two decimals.");
+        }
+
+        await runMutation(id, () => updateDoc(
+            doc(db, "expenses", currentUser.uid, "monthly", id),
+            { amountCents, amount: deleteField() }
+        ), monthKey);
+    }, [runMutation]);
+
+    const deleteExpense = useCallback(async (id, monthKey) => {
+        const currentUser = userRef.current;
+        if (!currentUser?.uid || !id) {
+            throw new Error("Unable to identify the expense.");
+        }
+
+        await runMutation(id, () => deleteDoc(
+            doc(db, "expenses", currentUser.uid, "monthly", id)
+        ), monthKey);
+    }, [runMutation]);
+
+    const value = useMemo(() => ({
+        participants,
+        profileStatus,
+        profileError: firebaseConfigurationError || profileError,
+        months,
+        getMonth: (monthKey) => months[monthKey] || EMPTY_MONTH,
+        loadMonth,
+        createExpense,
+        updateExpenseAmount,
+        deleteExpense,
+        mutationState
+    }), [
+        createExpense,
+        deleteExpense,
+        loadMonth,
+        months,
+        mutationState,
+        participants,
+        profileError,
+        profileStatus,
+        updateExpenseAmount
+    ]);
+
+    return <FireContext.Provider value={value}>{children}</FireContext.Provider>;
 }
