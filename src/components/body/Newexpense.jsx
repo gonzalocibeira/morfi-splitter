@@ -86,10 +86,8 @@ export default function Newexpense() {
                             </label>
                             <label className="expenseField expenseAmountField">spent
                                 <input
-                                    type="number"
+                                    type="text"
                                     inputMode="decimal"
-                                    min="0.01"
-                                    step="0.01"
                                     value={form.amount}
                                     required
                                     onChange={(event) => setField("amount", event.target.value)}

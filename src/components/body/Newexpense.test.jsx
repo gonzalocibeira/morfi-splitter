@@ -28,18 +28,40 @@ function renderForm(createExpense = jest.fn()) {
 test("validates money before creating an expense", () => {
     const createExpense = renderForm();
     fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "Alex" } });
-    fireEvent.change(screen.getByRole("spinbutton"), { target: { value: "1.234" } });
+    fireEvent.change(screen.getByLabelText("spent"), { target: { value: "1.234" } });
     fireEvent.submit(screen.getByRole("button", { name: "Submit" }).closest("form"));
 
     expect(createExpense).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("no more than two decimals");
 });
 
+test("accepts a comma from locale-aware decimal keyboards", async () => {
+    const createExpense = renderForm();
+    const amountInput = screen.getByLabelText("spent");
+
+    expect(amountInput).toHaveAttribute("type", "text");
+    expect(amountInput).toHaveAttribute("inputmode", "decimal");
+
+    fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "Alex" } });
+    fireEvent.change(amountInput, { target: { value: "12,34" } });
+    await act(async () => {
+        fireEvent.submit(screen.getByRole("button", { name: "Submit" }).closest("form"));
+    });
+
+    expect(createExpense).toHaveBeenCalledWith({
+        participantName: "Alex",
+        amountCents: 1234,
+        category: "Supermarket",
+        note: "",
+        nonSplit: false
+    });
+});
+
 test("prevents duplicate submissions while a create is pending", async () => {
     const pending = deferred();
     const createExpense = renderForm(jest.fn(() => pending.promise));
     fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "Alex" } });
-    fireEvent.change(screen.getByRole("spinbutton"), { target: { value: "12.34" } });
+    fireEvent.change(screen.getByLabelText("spent"), { target: { value: "12.34" } });
 
     const submit = screen.getByRole("button", { name: "Submit" });
     fireEvent.click(submit);
