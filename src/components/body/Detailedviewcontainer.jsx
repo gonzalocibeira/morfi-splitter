@@ -1,11 +1,11 @@
 import React, { lazy, Suspense, useContext, useEffect, useMemo, useState } from "react";
 import Detailedview from "./Detailedview";
 import { FireContext } from "../../Context/FireContext";
-import MonthPicker from "react-simple-month-picker";
+import MonthPicker from "./MonthPicker";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { buildChartData } from "../../domain/expenses";
-import { formatMonthKey, monthKeyFromDate } from "../../domain/months";
+import { formatMonthKey } from "../../domain/months";
 
 const DailyChart = lazy(() => import("./charts/DailyChart"));
 const CategoryChart = lazy(() => import("./charts/CategoryChart"));
@@ -42,7 +42,7 @@ export default function Detailedviewcontainer() {
         <>
             <div className="splitDate">
                 <h2>Select date</h2>
-                <MonthPicker onChange={(date) => setSelectedMonth(monthKeyFromDate(date))} />
+                <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
             </div>
             {!selectedMonth && <h2 className="statusMsg">Please select a month.</h2>}
             {monthState?.status === "loading" && <p className="statusMsg">Loading expenses…</p>}
