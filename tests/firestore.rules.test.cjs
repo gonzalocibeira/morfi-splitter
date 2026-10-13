@@ -20,7 +20,7 @@ const validExpense = {
 
 test("Firestore security rules", async (suite) => {
     const environment = await initializeTestEnvironment({
-        projectId: "morfi-splitter-rules-test",
+        projectId: "demo-morfi-splitter",
         firestore: {
             host: "127.0.0.1",
             port: 8080,

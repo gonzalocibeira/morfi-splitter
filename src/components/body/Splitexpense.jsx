@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FireContext } from "../../Context/FireContext";
-import MonthPicker from "react-simple-month-picker";
+import MonthPicker from "./MonthPicker";
 import { calculateSettlement } from "../../domain/expenses";
 import { formatCents } from "../../domain/money";
-import { formatMonthKey, monthKeyFromDate } from "../../domain/months";
+import { formatMonthKey } from "../../domain/months";
 
 export default function Splitexpense() {
     const { participants, profileStatus, profileError, getMonth, loadMonth } = useContext(FireContext);
@@ -45,7 +45,7 @@ export default function Splitexpense() {
         <>
             <div className="splitDate">
                 <h2>Select date</h2>
-                <MonthPicker onChange={(date) => setSelectedMonth(monthKeyFromDate(date))} />
+                <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
             </div>
             {!selectedMonth && <p className="statusMsg">Please select a month.</p>}
             {monthState?.status === "loading" && <p className="statusMsg">Loading expenses…</p>}
