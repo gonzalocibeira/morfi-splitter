@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useState } from "react";
 import { Link, Navigate, useLocation } from "react-router-dom";
 import { FireContext } from "../../Context/FireContext";
 import { AuthContext } from "../../Context/AuthContext";
+import { UIContext } from "../../Context/UIContext";
 import { monthKeyFromDate, formatMonthKey } from "../../domain/months";
 import { formatCents } from "../../domain/money";
 import useMonth from "../../hooks/useMonth";
@@ -34,6 +35,7 @@ export default function Landing() {
     const { user, isAuthReady, isAuthenticating, error, configurationError, login, logout } =
         useContext(AuthContext);
     const { profileError } = useContext(FireContext);
+    const { legacyUI } = useContext(UIContext) || {};
     const location = useLocation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -45,7 +47,7 @@ export default function Landing() {
         [month.expenses],
     );
     if (!isAuthReady) return <Loading>Restoring your session…</Loading>;
-    if (user && ["/new", "/split", "/detail"].includes(location.state?.from))
+    if (user && ["/new", "/split", "/detail", "/settings"].includes(location.state?.from))
         return <Navigate to={location.state.from} replace />;
     const handleLogin = async (event) => {
         event.preventDefault();
@@ -108,14 +110,14 @@ export default function Landing() {
         );
     return (
         <>
-            <PageTitle title="Overview" icon="home" />
+            <PageTitle title={legacyUI ? "The total spent this month is:" : "Overview"} icon="home" />
             <div className="overview-grid">
                 <Card className="total-card">
                     <div className="section-topline">
                         <p className="month-caption">{formatMonthKey(monthKey)}</p>
                         <Icon name="calendar" />
                     </div>
-                    <p className="total-label">Total expenses</p>
+                    {!legacyUI && <p className="total-label">Total expenses</p>}
                     {month.status === "success" ? (
                         <p className="hero-amount">{formatCents(total)}</p>
                     ) : (
@@ -130,25 +132,27 @@ export default function Landing() {
                         </p>
                     )}
                 </Card>
-                <div className="shortcut-list">
-                    {shortcuts.map((item) => (
-                        <Link key={item.to} to={item.to} className="shortcut card">
-                            <span className={`category-icon category-icon--${item.color}`}>
-                                <Icon name={item.icon} />
-                            </span>
-                            <span>
-                                <strong>{item.title}</strong>
-                                <small>{item.text}</small>
-                            </span>
-                            <Icon name="chevron" size={18} />
-                        </Link>
-                    ))}
-                </div>
+                {!legacyUI && (
+                    <div className="shortcut-list">
+                        {shortcuts.map((item) => (
+                            <Link key={item.to} to={item.to} className="shortcut card">
+                                <span className={`category-icon category-icon--${item.color}`}>
+                                    <Icon name={item.icon} />
+                                </span>
+                                <span>
+                                    <strong>{item.title}</strong>
+                                    <small>{item.text}</small>
+                                </span>
+                                <Icon name="chevron" size={18} />
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
             {profileError && <Notice>{profileError}</Notice>}
             <Card className="account-card">
                 <div>
-                    <p className="eyebrow">YOUR ACCOUNT</p>
+                    <p className="eyebrow">{legacyUI ? "Logged in as" : "YOUR ACCOUNT"}</p>
                     <p className="account-email">{user.email}</p>
                 </div>
                 <Button

@@ -13,6 +13,107 @@ async function ready(page, scenario = "normal", path = "/") {
     await page.goto(`${path}?scenario=${scenario}`);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 }
+test("legacy UI setting persists and preserves shared month selection", async ({ page }, testInfo) => {
+    await ready(page, "normal", "/detail");
+    await page.getByLabel("Expense month").fill("2025-12");
+    await go(page, "Settings");
+    const toggle = page.getByRole("switch", { name: "Legacy UI" });
+    await expect(toggle).not.toBeChecked();
+    await toggle.check();
+    await expect(page.locator(".app-shell")).toHaveClass(/legacy-ui/);
+    await page.screenshot({ path: testInfo.outputPath("legacy-settings.png"), fullPage: true });
+    await go(page, "Split");
+    await expect(page.getByLabel("Expense month")).toHaveValue("2025-12");
+    await go(page, "Overview");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("The total spent this month is:");
+    await expect(page.locator(".shortcut-list")).toHaveCount(0);
+    await page.screenshot({ path: testInfo.outputPath("legacy-overview.png"), fullPage: true });
+    await page.reload();
+    await expect(page.locator(".app-shell")).toHaveClass(/legacy-ui/);
+    await go(page, "Settings");
+    await expect(toggle).toBeChecked();
+    await toggle.focus();
+    await page.keyboard.press("Space");
+    await expect(page.locator(".app-shell")).not.toHaveClass(/legacy-ui/);
+    await page.reload();
+    await expect(toggle).not.toBeChecked();
+});
+test("charges stay on each participant's side in both interfaces and remain editable", async ({ page }, testInfo) => {
+    await ready(page, "normal", "/detail");
+    for (const legacy of [false, true]) {
+        if (legacy) {
+            await go(page, "Settings");
+            await page.getByRole("switch", { name: "Legacy UI" }).check();
+            await go(page, "Details");
+        }
+        await expect(page.getByRole("article")).toHaveCount(8);
+        const left = page.locator(".expense-row--left");
+        const right = page.locator(".expense-row--right");
+        await expect(left).toHaveCount(4);
+        await expect(right).toHaveCount(4);
+        for (const row of await left.all()) await expect(row).toHaveAccessibleName(/expense by Alex$/);
+        for (const row of await right.all()) await expect(row).toHaveAccessibleName(/expense by Sam$/);
+        const leftBox = await left.first().boundingBox();
+        const rightBox = await right.first().boundingBox();
+        expect(leftBox.x).toBeLessThan(rightBox.x);
+        await left.first().getByRole("button", { name: "Expense options" }).click();
+        await left.first().getByRole("button", { name: "Edit amount" }).click();
+        await left.first().getByLabel("New amount").fill(legacy ? "18,42" : "17,42");
+        await left.first().getByRole("button", { name: "Save", exact: true }).click();
+        await expect(left.first().locator(".expense-amount")).toContainText(legacy ? "18.42" : "17.42");
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+        await page.screenshot({ path: testInfo.outputPath(`${legacy ? "legacy" : "current"}-expense-sides.png`), fullPage: true });
+    }
+});
+test("settings requires login and restores the requested destination", async ({ page }) => {
+    await ready(page, "anonymous", "/settings");
+    await expect(page.getByRole("switch", { name: "Legacy UI" })).toHaveCount(0);
+    await page.getByLabel("Email", { exact: true }).fill("alex@example.com");
+    await page.getByLabel("Password", { exact: true }).fill("fixture-password");
+    await page.getByRole("button", { name: "Login", exact: true }).click();
+    await expect(page).toHaveURL(/\/settings$/);
+    await expect(page.getByRole("switch", { name: "Legacy UI" })).toBeVisible();
+});
+test("legacy interface supports adding, splitting, and confirmed deletion", async ({ page }, testInfo) => {
+    await ready(page, "normal", "/settings");
+    await page.getByRole("switch", { name: "Legacy UI" }).check();
+    await go(page, "Add expense");
+    await page.getByLabel("Paid by").selectOption("Sam");
+    await page.getByLabel("Amount", { exact: true }).fill("12,34");
+    await page.getByLabel(/Note/).fill("Legacy workflow");
+    await page.getByRole("checkbox").check();
+    await page.screenshot({ path: testInfo.outputPath("legacy-add-expense.png"), fullPage: true });
+    await page.getByRole("button", { name: "Save expense" }).click();
+    await expect(page.getByRole("status")).toContainText("Expense added.");
+    await go(page, "Split");
+    await expect(page.locator(".legacy-settlement")).toContainText("Sam spent:");
+    await expect(page.locator(".legacy-settlement")).toContainText("Sam spent: €19.84");
+    await expect(page.locator(".legacy-split-flow")).toContainText("Sam owes Alex €43.96");
+    await page.screenshot({ path: testInfo.outputPath("legacy-split.png"), fullPage: true });
+    await go(page, "Details");
+    const row = page.getByRole("article").filter({ hasText: "Legacy workflow" });
+    await expect(row).toHaveClass(/expense-row--right/);
+    await row.getByRole("button", { name: "Expense options" }).click();
+    await row.getByRole("button", { name: "Delete entry" }).click();
+    await page.getByRole("button", { name: "Delete expense", exact: true }).click();
+    await expect(row).toHaveCount(0);
+});
+test("legacy interface wraps long content at phone widths", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 667 });
+    await ready(page, "long", "/settings");
+    await page.getByRole("switch", { name: "Legacy UI" }).check();
+    for (const name of ["Add expense", "Split", "Details", "Settings"]) {
+        await go(page, name);
+        if (name === "Details") {
+            await expect(page.getByRole("article")).toHaveCount(8);
+            const row = page.getByRole("article").first();
+            await row.getByRole("button", { name: "Expense options" }).click();
+            await row.getByRole("button", { name: "Edit amount" }).click();
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+    }
+});
 test("all workflows: create, shared month, charts, comma edit, cancel, and delete", async ({
     page,
 }) => {

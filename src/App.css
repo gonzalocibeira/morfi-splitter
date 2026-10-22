@@ -1258,3 +1258,109 @@ dd {
     font-size: 0.8rem;
     margin: 18px 0 0;
 }
+
+.appearance-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 0;
+    cursor: pointer;
+}
+.appearance-toggle strong,
+.appearance-toggle small {
+    display: block;
+}
+.appearance-toggle small {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 8px;
+    max-width: 540px;
+}
+.appearance-toggle input {
+    appearance: none;
+    flex-shrink: 0;
+    width: 52px;
+    height: 44px;
+    margin: 0;
+    border: 2px solid var(--muted);
+    border-radius: 24px;
+    background: var(--surface);
+    cursor: pointer;
+}
+.appearance-toggle input::before {
+    content: "";
+    display: block;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    margin: 9px 4px;
+    background: var(--muted);
+}
+.appearance-toggle input:checked {
+    background: var(--green);
+    border-color: var(--green);
+}
+.appearance-toggle input:checked::before {
+    transform: translateX(18px);
+    background: var(--surface);
+}
+.expense-sides {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 22px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+.expense-sides strong {
+    max-width: 45%;
+    overflow-wrap: anywhere;
+}
+.expense-sides strong:last-child {
+    text-align: right;
+}
+.expense-list .expense-row {
+    width: min(82%, 600px);
+    margin-top: 14px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+}
+.expense-row--left {
+    margin-right: auto;
+    background: #f2f5ed;
+}
+.expense-row--right {
+    margin-left: auto;
+    background: #f3f0f7;
+}
+@media (max-width: 767px) {
+    .expense-list .expense-row {
+        width: 88%;
+        padding: 12px;
+    }
+    .expense-list .expense-row-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 8px;
+    }
+    .expense-list .expense-row .category-icon {
+        display: none;
+    }
+    .expense-list .expense-row-info {
+        min-width: 0;
+    }
+    .expense-list .expense-options {
+        grid-column: 2;
+        grid-row: 1 / 3;
+    }
+    .expense-list .expense-amount {
+        grid-column: 1;
+        max-width: none;
+        text-align: left;
+    }
+    .expense-list .expense-row-extra {
+        margin-left: 0;
+    }
+}

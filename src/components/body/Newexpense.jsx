@@ -1,5 +1,6 @@
 import React, { useContext, useRef, useState } from "react";
 import { FireContext } from "../../Context/FireContext";
+import { UIContext } from "../../Context/UIContext";
 import { parseMoneyToCents } from "../../domain/money";
 import { monthKeyFromDate } from "../../domain/months";
 import { Button, Card, MonthStatus, Notice, PageTitle, ProfileGate } from "../ui/Primitives";
@@ -12,6 +13,7 @@ const INITIAL_FORM = {
     nonSplit: false,
 };
 export default function Newexpense() {
+    const { legacyUI } = useContext(UIContext) || {};
     const {
         participants,
         createExpense,
@@ -72,8 +74,8 @@ export default function Newexpense() {
     const other = participants.find((name) => name !== form.participantName);
     return (
         <>
-            <PageTitle title="Add expense" icon="plus">
-                Recorded with today's date.
+            <PageTitle title={legacyUI ? "↓ Input new expense ↓" : "Add expense"} icon="plus">
+                {!legacyUI && "Recorded with today's date."}
             </PageTitle>
             <ProfileGate>
                 <Card className="expense-entry-card">

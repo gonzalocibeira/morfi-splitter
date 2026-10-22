@@ -4,8 +4,17 @@ import { formatExpenseDate } from "../../domain/months";
 import { Button, Notice } from "../ui/Primitives";
 import Icon from "../ui/Icon";
 import ConfirmDialog from "../ui/ConfirmDialog";
+import * as categoryImages from "../../assets/icons";
 const colors = { Supermarket: "sage", Food: "peach", Utilities: "lavender", Other: "blue" };
-function Detailedview({ expense, monthKey, pending = false, deleteExpense, updateExpenseAmount }) {
+function Detailedview({
+    expense,
+    monthKey,
+    pending = false,
+    deleteExpense,
+    updateExpenseAmount,
+    side,
+    legacyUI = false,
+}) {
     const [optionsView, setOptionsView] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [newAmount, setNewAmount] = useState(centsToInputValue(expense.amountCents));
@@ -70,16 +79,22 @@ function Detailedview({ expense, monthKey, pending = false, deleteExpense, updat
     };
     return (
         <article
-            className="expense-row"
+            className={`expense-row${side ? ` expense-row--${side}` : ""}`}
             aria-label={`${expense.category} expense by ${expense.participantName}`}
             aria-busy={isPending}
         >
             <div className="expense-row-main">
-                <span
-                    className={`category-icon category-icon--${colors[expense.category] || "blue"}`}
-                >
-                    <Icon name={expense.category} />
-                </span>
+                {legacyUI ? (
+                    <img
+                        className="legacy-expense-icon"
+                        src={categoryImages[expense.category] || categoryImages.Other}
+                        alt=""
+                    />
+                ) : (
+                    <span className={`category-icon category-icon--${colors[expense.category] || "blue"}`}>
+                        <Icon name={expense.category} />
+                    </span>
+                )}
                 <div className="expense-row-info">
                     <h3>{expense.category}</h3>
                     <p>

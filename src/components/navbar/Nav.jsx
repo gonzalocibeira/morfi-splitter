@@ -6,6 +6,7 @@ const items = [
     { name: "Add expense", route: "/new", icon: "plus" },
     { name: "Split", route: "/split", icon: "split" },
     { name: "Details", route: "/detail", icon: "chart" },
+    { name: "Settings", route: "/settings", icon: "settings" },
 ];
 export default function Nav() {
     return (

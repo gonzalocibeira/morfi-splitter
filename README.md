@@ -6,6 +6,10 @@ Log expenses by participant and category, split shared costs equally, charge pur
 
 The interface uses restrained clay styling, clear form labels, and persistent phone navigation. Split and Details share a month selection that starts on the current month and resets when the account changes. Overview always shows the current month.
 
+Open **Settings → Legacy UI** to use the original handmade interface: blue-grey colours, illustrated icons, top navigation, a compact expense form, and the original overview and split layouts. The setting applies immediately and is saved in this browser across reloads and sign-ins; turn it off to return to the current design. Both designs use the same expense data and save/edit/delete controls.
+
+In **Details**, each person's charges appear on a consistent side of the history: the first household participant on the left, the second on the right. Names label both sides, and entries keep their date order in both designs.
+
 The logo combines a shared plate and a fork-shaped split. See [the branding notes](docs/branding.md) for the editable vector and icon regeneration command.
 
 ## Screenshots

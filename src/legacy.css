@@ -1,0 +1,391 @@
+/* Original handmade palette and layouts, scoped to the browser preference. */
+.legacy-ui {
+    --canvas: #37474f;
+    --surface: #607d8b;
+    --ink: #fff;
+    --muted: #eceff1;
+    --green: #1de9b6;
+    --green-dark: #64ffda;
+    --line: #90a4ae;
+    --radius: 2px;
+    --shadow: 0 19px 38px #0000004d, 0 15px 12px #00000038;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    padding-bottom: 0;
+}
+.legacy-ui h1,
+.legacy-ui h2,
+.legacy-ui h3 {
+    letter-spacing: normal;
+}
+.legacy-ui .main-content {
+    width: 100%;
+    padding: 30px 0;
+}
+.legacy-ui .page-heading {
+    justify-content: center;
+    text-align: center;
+    padding: 0 16px;
+}
+.legacy-ui .page-heading h1 {
+    font-size: 25px;
+}
+.legacy-ui .heading-icon {
+    display: none;
+}
+.legacy-ui .app-header {
+    background: #263238;
+    border: 0;
+    box-shadow: 0 3px 6px #0000003b;
+}
+.legacy-ui .header-inner {
+    width: 100%;
+    flex-direction: column;
+    padding: 16px;
+}
+.legacy-ui .brand {
+    color: white;
+    font-size: 2rem;
+    letter-spacing: normal;
+    font-weight: 700;
+}
+.legacy-ui .brand-mark {
+    width: 40px;
+    height: 40px;
+}
+.legacy-ui .main-nav {
+    position: static;
+    width: 100%;
+    height: auto;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    visibility: visible;
+    pointer-events: auto;
+}
+.legacy-ui .nav-item {
+    flex: 0 1 auto;
+    background: #78909c;
+    color: white;
+    border: 1px solid #0000001a;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 12px 18px;
+}
+.legacy-ui .nav-item svg {
+    display: none;
+}
+.legacy-ui .nav-item.is-active,
+.legacy-ui .nav-item:hover {
+    background: #455a64;
+    color: white;
+    box-shadow: none;
+}
+.legacy-ui .card {
+    border: 0;
+    border-radius: 0;
+}
+.legacy-ui .overview-grid {
+    display: block;
+    min-height: 300px;
+}
+.legacy-ui .total-card {
+    background: transparent;
+    box-shadow: none;
+    text-align: center;
+}
+.legacy-ui .total-card .section-topline {
+    justify-content: center;
+}
+.legacy-ui .total-card .section-topline svg {
+    display: none;
+}
+.legacy-ui .hero-amount {
+    font-size: 50px;
+    letter-spacing: normal;
+    color: white;
+}
+.legacy-ui .total-card .hero-amount {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 auto;
+    border-bottom: 1.5px solid white;
+}
+.legacy-ui .account-card {
+    background: transparent;
+    box-shadow: none;
+    flex-direction: column;
+    text-align: center;
+    margin: 0;
+}
+.legacy-ui .account-card .eyebrow {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 1rem;
+    font-weight: 400;
+}
+.legacy-ui .account-card .button {
+    background: #ff1744;
+    color: #fff;
+}
+.legacy-ui .button {
+    border: 0;
+    border-radius: 2px;
+    box-shadow: none;
+}
+.legacy-ui .button--primary {
+    color: #263238;
+}
+.legacy-ui .button--secondary {
+    background: #b0bec5;
+    color: #263238;
+}
+.legacy-ui .button--danger,
+.legacy-ui .button--danger-quiet {
+    background: #f44336;
+    color: white;
+}
+.legacy-ui .expense-entry-card .stack-form {
+    max-width: 640px;
+    margin: auto;
+}
+.legacy-ui .expense-entry-card {
+    max-width: none;
+}
+.legacy-ui .field input,
+.legacy-ui .field select,
+.legacy-ui .field textarea,
+.legacy-ui .month-picker input {
+    border: 1px solid #263238;
+    border-radius: 2px;
+    background-color: #fff;
+    color: #263238;
+    box-shadow: none;
+    min-height: 44px;
+}
+.legacy-ui .field {
+    color: white;
+}
+.legacy-ui .amount-input > span {
+    color: #263238;
+}
+.legacy-ui .amount-input,
+.legacy-ui .amount-input input {
+    background: white;
+    color: #263238;
+    border-radius: 2px;
+}
+.legacy-ui .split-toggle {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+}
+.legacy-ui .form-actions {
+    position: static;
+    justify-content: space-evenly;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+    min-height: 0;
+}
+.legacy-ui .form-actions > .button {
+    flex: 0 1 auto;
+}
+.legacy-ui .month-toolbar {
+    background: #607d8b;
+    padding: 20px 16px;
+    margin-bottom: 30px;
+    justify-content: center;
+    box-shadow: var(--shadow);
+}
+.legacy-ui .month-picker {
+    align-items: center;
+    width: auto;
+    max-width: 100%;
+}
+.legacy-ui .legacy-settlement {
+    text-align: center;
+}
+.legacy-settlement > h2 {
+    border-bottom: 1px solid black;
+    padding-bottom: 16px;
+}
+.legacy-totals-group {
+    margin: 24px auto;
+    max-width: 90%;
+}
+.legacy-totals-row {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+.legacy-totals-row > p {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.legacy-split-flow {
+    color: #eceff1;
+    font-weight: 700;
+}
+.legacy-split-flow > span {
+    color: #cfd8dc;
+    font-size: 50px;
+    line-height: 1;
+}
+.legacy-ui .split-rules {
+    text-align: center;
+    padding: 0 16px;
+}
+.legacy-ui .chart-card,
+.legacy-ui .history-card {
+    background: transparent;
+    box-shadow: none;
+}
+.legacy-ui .chart-switch {
+    background: transparent;
+    justify-content: space-evenly;
+    width: 100%;
+}
+.legacy-ui .chart-switch button {
+    border-radius: 0;
+    background: #546e7a;
+    color: white;
+}
+.legacy-ui .chart-switch button.is-active {
+    background: #263238;
+    border-color: white;
+}
+.legacy-ui .chart-region {
+    background: #eceff1;
+    color: #263238;
+    padding: 16px 8px;
+}
+.legacy-ui .count-badge {
+    background: #263238;
+}
+.legacy-ui .expense-list .expense-row {
+    width: min(80%, 300px);
+    background: #263238;
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0 3px 6px #0000003b;
+}
+.legacy-ui .expense-row-main {
+    display: grid;
+    grid-template-columns: 50px minmax(0, 1fr);
+    text-align: center;
+    gap: 8px;
+}
+.legacy-expense-icon {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    grid-row: 1 / 4;
+}
+.legacy-ui .expense-row-info,
+.legacy-ui .expense-amount,
+.legacy-ui .expense-options {
+    grid-column: 2;
+    grid-row: auto;
+    min-width: 0;
+}
+.legacy-ui .expense-amount {
+    max-width: none;
+    text-align: center;
+}
+.legacy-ui .expense-options {
+    justify-self: center;
+    border-radius: 2px;
+    background: lightgray;
+    color: black;
+}
+.legacy-ui .expense-row-extra {
+    margin: 10px 0 0;
+    text-align: center;
+}
+.legacy-ui .expense-row-actions,
+.legacy-ui .edit-amount-form {
+    margin-left: 0;
+    flex-wrap: wrap;
+}
+.legacy-ui .edit-amount-form .field {
+    flex-basis: 100%;
+}
+.legacy-ui .expense-tag {
+    background: white;
+    color: #463d86;
+    border-radius: 2px;
+}
+.legacy-ui .login-layout {
+    display: block;
+    max-width: 420px;
+    margin: auto;
+    padding: 0 16px;
+}
+.legacy-ui .login-intro {
+    display: none;
+}
+.legacy-ui .login-card {
+    background: transparent;
+    box-shadow: none;
+}
+.legacy-ui .confirm-dialog {
+    border-radius: 4px;
+}
+.legacy-ui .settings-card {
+    max-width: 720px;
+    margin: 0 auto;
+}
+.legacy-ui .app-footer {
+    width: 100%;
+    background: #b0bec5;
+    color: black;
+    border-top: 2px solid black;
+    padding: 12px 16px;
+}
+.legacy-ui .footer-straw-hat {
+    width: 50px;
+    height: 50px;
+}
+.legacy-ui :focus-visible {
+    outline-color: #64ffda;
+}
+@media (min-width: 768px) {
+    .legacy-ui .expense-entry-card .form-fields {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        align-items: start;
+    }
+    .legacy-ui .expense-entry-card .form-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+    }
+    .legacy-ui .expense-entry-card .split-toggle,
+    .legacy-ui .expense-entry-card .form-fields > .field:last-child {
+        grid-column: 1 / -1;
+    }
+}
+@media (max-width: 767px) {
+    .legacy-ui .brand {
+        font-size: 1.6rem;
+    }
+    .legacy-ui .nav-item {
+        font-size: 0.85rem;
+        padding: 10px 12px;
+    }
+    .legacy-ui .main-content {
+        padding: 24px 0;
+    }
+    .legacy-ui .legacy-totals-row {
+        gap: 12px;
+    }
+}

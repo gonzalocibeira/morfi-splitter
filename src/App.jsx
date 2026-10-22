@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import "./App.css";
 import AuthProvider, { AuthContext } from "./Context/AuthContext";
 import FireProvider from "./Context/FireContext";
-import UIProvider from "./Context/UIContext";
+import UIProvider, { UIContext } from "./Context/UIContext";
+import "./legacy.css";
 import Landing from "./components/body/Landing";
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/body/footer";
@@ -13,6 +14,7 @@ import { Loading } from "./components/ui/Primitives";
 const NewExpense = lazy(() => import("./components/body/Newexpense"));
 const SplitExpense = lazy(() => import("./components/body/Splitexpense"));
 const DetailedView = lazy(() => import("./components/body/Detailedviewcontainer"));
+const Settings = lazy(() => import("./components/body/Settings"));
 function ProtectedPage({ children }) {
     return (
         <ProtectedRoute>
@@ -22,6 +24,7 @@ function ProtectedPage({ children }) {
 }
 function Shell() {
     const { user } = useContext(AuthContext);
+    const { legacyUI } = useContext(UIContext);
     const { pathname } = useLocation();
     const main = useRef(null);
     const previousPath = useRef(pathname);
@@ -31,6 +34,7 @@ function Shell() {
             "/new": "Add expense",
             "/split": "Split expenses",
             "/detail": "Expense details",
+            "/settings": "Settings",
         };
         document.title = `${titles[pathname] || "Page not found"} · Morfi Splitter`;
         if (previousPath.current !== pathname) {
@@ -95,55 +99,61 @@ function Shell() {
     }, []);
     return (
         <FireProvider key={user?.uid || "anonymous"}>
-            <UIProvider>
-                <div
-                    className={`app-shell${user ? " is-signed-in" : ""}${user && pathname === "/new" ? " has-expense-actions" : ""}`}
-                >
-                    <a className="skip-link" href="#main-content">
-                        Skip to content
-                    </a>
-                    <Navbar />
-                    <main id="main-content" className="main-content" ref={main} tabIndex={-1}>
-                        <Routes>
-                            <Route path="/" element={<Landing />} />
-                            <Route
-                                path="/new"
-                                element={
-                                    <ProtectedPage>
-                                        <NewExpense />
-                                    </ProtectedPage>
-                                }
-                            />
-                            <Route
-                                path="/split"
-                                element={
-                                    <ProtectedPage>
-                                        <SplitExpense />
-                                    </ProtectedPage>
-                                }
-                            />
-                            <Route
-                                path="/detail"
-                                element={
-                                    <ProtectedPage>
-                                        <DetailedView />
-                                    </ProtectedPage>
-                                }
-                            />
-                            <Route
-                                path="*"
-                                element={
-                                    <section className="card">
-                                        <h1>Page not found</h1>
-                                        <a href="/">Back to overview</a>
-                                    </section>
-                                }
-                            />
-                        </Routes>
-                    </main>
-                    <Footer />
-                </div>
-            </UIProvider>
+            <div
+                className={`app-shell${legacyUI ? " legacy-ui" : ""}${user ? " is-signed-in" : ""}${user && pathname === "/new" ? " has-expense-actions" : ""}`}
+            >
+                <a className="skip-link" href="#main-content">
+                    Skip to content
+                </a>
+                <Navbar />
+                <main id="main-content" className="main-content" ref={main} tabIndex={-1}>
+                    <Routes>
+                        <Route path="/" element={<Landing />} />
+                        <Route
+                            path="/new"
+                            element={
+                                <ProtectedPage>
+                                    <NewExpense />
+                                </ProtectedPage>
+                            }
+                        />
+                        <Route
+                            path="/split"
+                            element={
+                                <ProtectedPage>
+                                    <SplitExpense />
+                                </ProtectedPage>
+                            }
+                        />
+                        <Route
+                            path="/detail"
+                            element={
+                                <ProtectedPage>
+                                    <DetailedView />
+                                </ProtectedPage>
+                            }
+                        />
+                        <Route
+                            path="/settings"
+                            element={
+                                <ProtectedPage>
+                                    <Settings />
+                                </ProtectedPage>
+                            }
+                        />
+                        <Route
+                            path="*"
+                            element={
+                                <section className="card">
+                                    <h1>Page not found</h1>
+                                    <a href="/">Back to overview</a>
+                                </section>
+                            }
+                        />
+                    </Routes>
+                </main>
+                <Footer />
+            </div>
         </FireProvider>
     );
 }
@@ -152,7 +162,9 @@ export default function App() {
         <ErrorBoundary>
             <BrowserRouter>
                 <AuthProvider>
-                    <Shell />
+                    <UIProvider>
+                        <Shell />
+                    </UIProvider>
                 </AuthProvider>
             </BrowserRouter>
         </ErrorBoundary>
