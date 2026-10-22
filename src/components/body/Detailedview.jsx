@@ -1,142 +1,201 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Supermarket, Food, Utilities, Other } from "../../assets/icons";
-import { FireContext } from "../../Context/FireContext";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { centsToInputValue, formatCents, parseMoneyToCents } from "../../domain/money";
 import { formatExpenseDate } from "../../domain/months";
-
-const confirmationDialog = withReactContent(Swal);
-const CATEGORY_ICONS = { Supermarket, Food, Utilities, Other };
-
-export default function Detailedview({ expense, monthKey, participants }) {
-    const { deleteExpense, updateExpenseAmount, mutationState } = useContext(FireContext);
+import { Button, Notice } from "../ui/Primitives";
+import Icon from "../ui/Icon";
+import ConfirmDialog from "../ui/ConfirmDialog";
+const colors = { Supermarket: "sage", Food: "peach", Utilities: "lavender", Other: "blue" };
+function Detailedview({ expense, monthKey, pending = false, deleteExpense, updateExpenseAmount }) {
     const [optionsView, setOptionsView] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [newAmount, setNewAmount] = useState(centsToInputValue(expense.amountCents));
     const [rowError, setRowError] = useState(null);
-    const isPending = mutationState.pending && mutationState.id === expense.id;
-
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [localPending, setLocalPending] = useState(false);
+    const lock = useRef(false);
+    const editButton = useRef(null);
+    const optionsButton = useRef(null);
+    const amountInput = useRef(null);
+    const isPending = pending || localPending;
     useEffect(() => {
-        setNewAmount(centsToInputValue(expense.amountCents));
-    }, [expense.amountCents]);
-
-    const confirmDelete = async () => {
-        const result = await confirmationDialog.fire({
-            title: <strong>Are you sure?</strong>,
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#f44336",
-            cancelButtonColor: "#B0BEC5",
-            confirmButtonText: "Delete",
-            cancelButtonText: "Cancel",
-            width: "90vw"
-        });
-
-        if (!result.isConfirmed) {
-            return;
-        }
-
+        if (!editMode) setNewAmount(centsToInputValue(expense.amountCents));
+    }, [expense.amountCents, editMode]);
+    useEffect(() => {
+        if (editMode) amountInput.current?.focus();
+    }, [editMode]);
+    const cancelEdit = () => {
+        setEditMode(false);
         setRowError(null);
+        setNewAmount(centsToInputValue(expense.amountCents));
+        editButton.current?.focus();
+    };
+    const confirmDelete = async () => {
+        if (lock.current || isPending) return;
+        setConfirmOpen(false);
+        setRowError(null);
+        lock.current = true;
+        setLocalPending(true);
         try {
             await deleteExpense(expense.id, monthKey);
         } catch (error) {
             setRowError(error.message);
+        } finally {
+            lock.current = false;
+            setLocalPending(false);
         }
     };
-
-    const saveAmount = async () => {
+    const saveAmount = async (event) => {
+        event.preventDefault();
+        if (lock.current || isPending) return;
         const amountCents = parseMoneyToCents(newAmount);
         if (!amountCents) {
             setRowError("Enter a positive amount with no more than two decimals.");
+            amountInput.current?.focus();
             return;
         }
-
         setRowError(null);
+        lock.current = true;
+        setLocalPending(true);
         try {
             await updateExpenseAmount(expense.id, monthKey, amountCents);
             setEditMode(false);
             setOptionsView(false);
+            optionsButton.current?.focus();
         } catch (error) {
             setRowError(error.message);
+        } finally {
+            lock.current = false;
+            setLocalPending(false);
         }
     };
-
-    const expenseIcon = CATEGORY_ICONS[expense.category] || Other;
-
     return (
-        <div
-            className="detailedExpense"
-            data-aos={expense.participantName === participants[0] ? "fade-right" : "fade-left"}
-            style={expense.participantName === participants[1] ? { marginLeft: "auto" } : { marginLeft: 10 }}
+        <article
+            className="expense-row"
+            aria-label={`${expense.category} expense by ${expense.participantName}`}
+            aria-busy={isPending}
         >
-            <img className="expenseIcon" src={expenseIcon} alt="" />
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <p style={{ borderBottom: "1px solid white", marginBottom: -5 }}>
-                    {formatExpenseDate(expense.occurredAt)} - <strong>{expense.participantName}</strong>
-                </p>
-                <p>{formatCents(expense.amountCents)} on {expense.category}</p>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                    {expense.note && <p style={{ marginTop: "-5px", textAlign: "center" }}>Note: {expense.note}</p>}
-                    {expense.nonSplit && (
-                        <p style={{ marginTop: "-5px", textAlign: "center", color: "RGB(70,61,134)", backgroundColor: "white", width: "90%", fontWeight: 700, borderRadius: "2px" }}>
-                            Purchase made for the other user
-                        </p>
-                    )}
+            <div className="expense-row-main">
+                <span
+                    className={`category-icon category-icon--${colors[expense.category] || "blue"}`}
+                >
+                    <Icon name={expense.category} />
+                </span>
+                <div className="expense-row-info">
+                    <h3>{expense.category}</h3>
+                    <p>
+                        <strong>{expense.participantName}</strong>
+                        <span aria-hidden="true"> · </span>
+                        <time dateTime={expense.occurredAt.toISOString()}>
+                            {formatExpenseDate(expense.occurredAt)}
+                        </time>
+                    </p>
                 </div>
+                <strong className="expense-amount">{formatCents(expense.amountCents)}</strong>
                 <button
+                    ref={optionsButton}
                     type="button"
+                    className="icon-button expense-options"
                     aria-expanded={optionsView}
                     aria-label="Expense options"
-                    style={{ backgroundColor: "LightGray", border: "none", color: "black", borderRadius: "2px", minWidth: "40px" }}
-                    onClick={() => setOptionsView((visible) => !visible)}
+                    disabled={isPending}
+                    onClick={() => {
+                        setOptionsView((visible) => !visible);
+                        if (optionsView) {
+                            setEditMode(false);
+                            setRowError(null);
+                        }
+                    }}
                 >
-                    {optionsView ? "▲" : "▼"}
+                    <Icon name={optionsView ? "close" : "chevron"} size={19} />
                 </button>
-                {optionsView && (
-                    <div>
-                        <button
-                            type="button"
-                            disabled={isPending}
-                            style={{ backgroundColor: "#1DE9B6", border: "none", color: "#263238", marginTop: "20px", marginBottom: "5px", borderRadius: "2px", marginRight: "5px" }}
-                            onClick={() => setEditMode((editing) => !editing)}
-                        >
-                            Edit amount
-                        </button>
-                        <button
-                            type="button"
-                            disabled={isPending}
-                            style={{ backgroundColor: "#f44336", border: "none", color: "white", marginTop: "20px", marginBottom: "5px", borderRadius: "2px" }}
-                            onClick={confirmDelete}
-                        >
-                            {isPending ? "Working…" : "Delete entry"}
-                        </button>
-                    </div>
-                )}
-                {editMode && (
-                    <div style={{ display: "flex", alignItems: "center", marginTop: "10px" }}>
+            </div>
+            {(expense.note || expense.nonSplit) && (
+                <div className="expense-row-extra">
+                    {expense.note && <p className="expense-note">{expense.note}</p>}
+                    {expense.nonSplit && (
+                        <span className="expense-tag">
+                            Paid for the other person · charged in full
+                        </span>
+                    )}
+                </div>
+            )}
+            {optionsView && (
+                <div className="expense-row-actions">
+                    <button
+                        ref={editButton}
+                        type="button"
+                        className="button button--secondary"
+                        disabled={isPending}
+                        onClick={() => {
+                            setEditMode(true);
+                            setRowError(null);
+                        }}
+                    >
+                        <Icon name="edit" size={16} />
+                        Edit amount
+                    </button>
+                    <Button
+                        variant="danger-quiet"
+                        disabled={isPending}
+                        onClick={(event) => {
+                            event.currentTarget.focus();
+                            setConfirmOpen(true);
+                        }}
+                    >
+                        <Icon name="trash" size={16} />
+                        {isPending ? "Working…" : "Delete entry"}
+                    </Button>
+                </div>
+            )}
+            {editMode && (
+                <form className="edit-amount-form" onSubmit={saveAmount}>
+                    <label className="field">
+                        New amount
                         <input
-                            aria-label="New amount"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
+                            ref={amountInput}
+                            type="text"
+                            inputMode="decimal"
                             value={newAmount}
                             disabled={isPending}
-                            onChange={(event) => setNewAmount(event.target.value)}
-                            style={{ width: "70px", marginRight: "5px" }}
+                            onChange={(event) => {
+                                setNewAmount(event.target.value);
+                                setRowError(null);
+                            }}
+                            onKeyDown={(event) => {
+                                if (event.key === "Escape") {
+                                    event.preventDefault();
+                                    cancelEdit();
+                                }
+                            }}
                         />
-                        <button
+                    </label>
+                    <div className="edit-amount-buttons">
+                        <Button
+                            variant="secondary"
                             type="button"
                             disabled={isPending}
-                            style={{ backgroundColor: "#1DE9B6", border: "none", color: "#263238", borderRadius: "2px" }}
-                            onClick={saveAmount}
+                            onClick={cancelEdit}
                         >
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={isPending}>
                             {isPending ? "Saving…" : "Save"}
-                        </button>
+                        </Button>
                     </div>
-                )}
-                {rowError && <p className="errorMsg" role="alert">{rowError}</p>}
-            </div>
-        </div>
+                </form>
+            )}
+            {rowError && <Notice>{rowError}</Notice>}
+            <ConfirmDialog
+                open={confirmOpen}
+                title="Delete this expense?"
+                onCancel={() => setConfirmOpen(false)}
+                onConfirm={confirmDelete}
+            >
+                {expense.participantName}'s {expense.category.toLowerCase()} expense of{" "}
+                {formatCents(expense.amountCents)}
+                {expense.note ? ` — ${expense.note}` : ""} will be permanently deleted.
+            </ConfirmDialog>
+        </article>
     );
 }
+export default memo(Detailedview);

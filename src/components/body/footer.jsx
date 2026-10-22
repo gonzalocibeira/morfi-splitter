@@ -1,13 +1,16 @@
-import React from 'react'
-import nika from "../../assets/nika.png";
-
+import React from "react";
+import strawHat from "../../assets/nika.png";
 export default function Footer() {
     return (
-        <footer>
-            <div className="footerDiv">
-                <img src={nika} alt="Sraw Hat Icon" className="footerIcon"/>
-                <span>Developed by Gonzalo Cibeira - 2022</span>
-            </div>
+        <footer className="app-footer">
+            <img
+                className="footer-straw-hat"
+                src={strawHat}
+                alt="Straw hat"
+                width="40"
+                height="40"
+            />
+            <small>Developed by Gonzalo Cibeira · 2022</small>
         </footer>
-    )
-};
+    );
+}

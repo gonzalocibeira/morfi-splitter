@@ -1,77 +1,127 @@
-header{
+.app-header {
+    border-bottom: 1px solid var(--line);
+    background: #f8f8f2;
+}
+.header-inner {
+    width: min(100% - 64px, 1150px);
+    min-height: 80px;
+    margin: 0 auto;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+}
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    min-width: 0;
+    max-width: 100%;
+    text-decoration: none;
+    color: var(--green);
+    font-size: 1.25rem;
+    letter-spacing: -0.04em;
+    font-weight: 750;
+}
+.brand > span:last-child {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.brand-wordmark {
+    white-space: nowrap;
+}
+.brand-mark {
+    width: 42px;
+    height: 42px;
+    display: block;
+    flex-shrink: 0;
+}
+.brand-light {
+    font-weight: 450;
+}
+.main-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    background: #e9ede24d;
+    padding: 5px;
+    border-radius: 14px;
+}
+.nav-item {
+    min-height: 44px;
+    min-width: 0;
+    display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #263238;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-}
-
-.headerDiv{
-    display: flex;
-    align-items: center;
-}
-
-nav{
-    width: 100vw;
-    display: flex;
-    justify-content:space-evenly;
-    margin-bottom: 10px;
-}
-
-.headerIcon{
-    height: 40px;
-    margin-right: 10px;
-}
-
-.headerH1{
-    color: white;
+    gap: 8px;
     text-decoration: none;
+    color: #5d6c59;
+    font-size: 0.8rem;
+    font-weight: 550;
+    padding: 10px 14px;
+    border-radius: 10px;
+    overflow-wrap: anywhere;
 }
-
-.headerBtn{
-    color: white;
-    align-items: center;
-    text-align: center;
-    background-color: #78909C;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: .25rem;
-    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: inline-flex;
-    font-family: system-ui,-apple-system,system-ui,"Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    justify-content: center;
-    line-height: 1.25;
-    margin: 0;
-    min-height: 2rem;
-    padding: calc(.875rem - 1px) calc(1.5rem - 1px);
-    position: relative;
-    text-decoration: none;
-    transition: all 250ms;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    vertical-align: baseline;
-    width: 100px;
+.nav-item svg {
+    width: 18px;
+    height: 18px;
 }
-
-.headerBtn:focus {
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
-    color: rgba(0, 0, 0, 0.65);
+.nav-item.is-active {
+    background: #e1e9d7;
+    color: #3d593d;
+    box-shadow:
+        inset 1px 1px 2px #ffffffbd,
+        2px 2px 4px #43533808;
 }
-
-.headerBtn:hover {
-    transform: translateY(-1px);
+.nav-item:hover {
+    color: #3d593d;
+    background: #e8ede1;
 }
-
-.headerBtn:active {
-    background-color: #F0F0F1;
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
-    color: rgba(0, 0, 0, 0.65);
-    transform: translateY(0);
+@media (max-width: 767px) {
+    :root {
+        --nav-height: 4.25rem;
+    }
+    .header-inner {
+        width: calc(100% - 32px);
+        min-height: 60px;
+        padding: 7px 0;
+    }
+    .brand {
+        font-size: 1.15rem;
+    }
+    .brand-mark {
+        width: 34px;
+        height: 34px;
+    }
+    .main-nav {
+        position: fixed;
+        z-index: 10;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+        padding: 6px 10px calc(6px + env(safe-area-inset-bottom));
+        gap: 4px;
+        background: #f9faf4;
+        border-top: 1px solid #dce3d3;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -3px 12px #33422508;
+        flex-wrap: nowrap;
+    }
+    .nav-item {
+        flex: 1;
+        flex-direction: column;
+        gap: 3px;
+        padding: 5px 3px;
+        font-size: 0.7rem;
+        min-height: 48px;
+    }
+    .nav-item svg {
+        width: 20px;
+        height: 20px;
+    }
 }

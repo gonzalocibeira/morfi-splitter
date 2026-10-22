@@ -2,259 +2,305 @@ import React, {
     createContext,
     useCallback,
     useContext,
-    useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
-    useState
+    useState,
 } from "react";
-import {
-    addDoc,
-    collection,
-    deleteDoc,
-    deleteField,
-    doc,
-    getDoc,
-    getDocs,
-    orderBy,
-    query,
-    serverTimestamp,
-    Timestamp,
-    updateDoc,
-    where
-} from "firebase/firestore";
-import { db, firebaseConfigurationError } from "../components/firebase/firestore";
+import { firebaseConfigurationError } from "../components/firebase/firestore";
 import { AuthContext } from "./AuthContext";
 import { normalizeExpenseRecord } from "../domain/expenses";
 import { monthKeyFromDate, monthRangeFromKey } from "../domain/months";
 
 export const FireContext = createContext(null);
-
-const EMPTY_MONTH = Object.freeze({ expenses: [], status: "idle", error: null, invalidCount: 0 });
-
-function readableDataError(error) {
-    return error?.message || "Unable to load your expenses. Please try again.";
-}
-
-function normalizeParticipants(value) {
-    if (!Array.isArray(value)) {
-        return [];
-    }
-
-    return value
-        .filter((name) => typeof name === "string" && name.trim())
-        .map((name) => name.trim())
-        .slice(0, 2);
-}
+const EMPTY_MONTH = Object.freeze({
+    expenses: [],
+    status: "idle",
+    error: null,
+    warning: null,
+    refreshing: false,
+    invalidCount: 0,
+    loadedAt: 0,
+    hasSavedChanges: false,
+});
+const CACHE_TTL = 60_000;
+const getStore = () => import("../components/firebase/expenseStore");
+const readableError = (error) =>
+    error?.message || "Unable to load your expenses. Please try again.";
 
 export default function FireProvider({ children }) {
     const { user } = useContext(AuthContext);
+    const uid = user?.uid;
+    const userRef = useRef(uid);
+    userRef.current = uid;
     const [participants, setParticipants] = useState([]);
+    const participantsRef = useRef([]);
     const [profileStatus, setProfileStatus] = useState("idle");
     const [profileError, setProfileError] = useState(null);
     const [months, setMonths] = useState({});
-    const [mutationState, setMutationState] = useState({ pending: false, id: null, error: null });
-    const generationRef = useRef(0);
     const monthsRef = useRef({});
-    const userRef = useRef(user);
-    const requestRef = useRef(0);
-    const monthRequestsRef = useRef({});
+    const [pendingOperations, setPendingOperations] = useState({});
+    const operationsRef = useRef(new Map());
+    const generation = useRef(0);
+    const requests = useRef(new Map());
 
-    const replaceMonths = useCallback((nextMonths) => {
-        monthsRef.current = nextMonths;
-        setMonths(nextMonths);
+    const updateMonth = useCallback((key, update) => {
+        const current = monthsRef.current[key] || EMPTY_MONTH;
+        monthsRef.current = {
+            ...monthsRef.current,
+            [key]: typeof update === "function" ? update(current) : update,
+        };
+        setMonths(monthsRef.current);
     }, []);
 
-    const updateMonth = useCallback((monthKey, update) => {
-        const current = monthsRef.current[monthKey] || EMPTY_MONTH;
-        const nextEntry = typeof update === "function" ? update(current) : update;
-        replaceMonths({ ...monthsRef.current, [monthKey]: nextEntry });
-    }, [replaceMonths]);
-
-    useEffect(() => {
-        userRef.current = user;
-        generationRef.current += 1;
-        const generation = generationRef.current;
-        replaceMonths({});
+    useLayoutEffect(() => {
+        const version = ++generation.current;
+        monthsRef.current = {};
+        requests.current.clear();
+        operationsRef.current.clear();
+        participantsRef.current = [];
+        setMonths({});
+        setPendingOperations({});
         setParticipants([]);
         setProfileError(null);
-        setMutationState({ pending: false, id: null, error: null });
-
-        if (!user?.uid) {
+        if (!uid || firebaseConfigurationError) {
             setProfileStatus("idle");
-            return undefined;
+            return () => {
+                generation.current += 1;
+            };
         }
-
         setProfileStatus("loading");
-        getDoc(doc(db, "users", user.uid))
-            .then((snapshot) => {
-                if (generationRef.current !== generation) {
-                    return;
+        getStore()
+            .then((store) => store.loadProfile(uid))
+            .then((names) => {
+                if (version !== generation.current || uid !== userRef.current) return;
+                const normalized = Array.isArray(names)
+                    ? names
+                          .filter((name) => typeof name === "string" && name.trim())
+                          .map((name) => name.trim())
+                    : [];
+                if (normalized.length !== 2 || normalized[0] === normalized[1]) {
+                    throw new Error(
+                        "This account needs two different participant names in its profile.",
+                    );
                 }
-
-                const names = normalizeParticipants(snapshot.data()?.names);
-                setParticipants(names);
-                if (!snapshot.exists() || names.length !== 2) {
-                    setProfileStatus("error");
-                    setProfileError("This account needs exactly two participant names in its profile.");
-                    return;
-                }
+                participantsRef.current = normalized;
+                setParticipants(normalized);
                 setProfileStatus("success");
             })
             .catch((error) => {
-                if (generationRef.current === generation) {
-                    setProfileStatus("error");
-                    setProfileError(readableDataError(error));
-                }
+                if (version !== generation.current || uid !== userRef.current) return;
+                setProfileStatus("error");
+                setProfileError(readableError(error));
             });
+        return () => {
+            generation.current += 1;
+        };
+    }, [uid]);
 
-        return undefined;
-    }, [replaceMonths, user]);
-
-    const loadMonth = useCallback(async (monthKey, options = {}) => {
-        const range = monthRangeFromKey(monthKey);
-        const currentUser = userRef.current;
-        if (!range || !currentUser?.uid) {
-            return [];
-        }
-
-        const cached = monthsRef.current[monthKey];
-        if (!options.force && (cached?.status === "success" || cached?.status === "loading")) {
-            return cached.expenses;
-        }
-
-        const generation = generationRef.current;
-        const requestId = ++requestRef.current;
-        monthRequestsRef.current[monthKey] = requestId;
-        updateMonth(monthKey, (current) => ({ ...current, status: "loading", error: null }));
-
-        try {
-            const expensesQuery = query(
-                collection(db, "expenses", currentUser.uid, "monthly"),
-                where("date", ">=", Timestamp.fromDate(range.start)),
-                where("date", "<", Timestamp.fromDate(range.end)),
-                orderBy("date", "asc")
-            );
-            const snapshot = await getDocs(expensesQuery);
-            const normalized = snapshot.docs
-                .map((expenseDoc) => normalizeExpenseRecord(expenseDoc.id, expenseDoc.data()));
-            const expenses = normalized.filter(Boolean);
-
+    const loadMonth = useCallback(
+        (monthKey, options = {}) => {
+            const range = monthRangeFromKey(monthKey);
+            const owner = userRef.current;
+            if (!range || !owner || firebaseConfigurationError) return Promise.resolve([]);
+            const active = requests.current.get(monthKey);
+            if (!options.force && active) return active.promise;
+            const cached = monthsRef.current[monthKey];
             if (
-                generationRef.current !== generation
-                || userRef.current?.uid !== currentUser.uid
-                || monthRequestsRef.current[monthKey] !== requestId
+                !options.force &&
+                cached?.status === "success" &&
+                Date.now() - cached.loadedAt < CACHE_TTL
             ) {
-                return expenses;
+                return Promise.resolve(cached.expenses);
             }
-
-            updateMonth(monthKey, {
-                expenses,
-                status: "success",
+            const version = generation.current;
+            const request = {};
+            const isCurrent = () =>
+                version === generation.current &&
+                owner === userRef.current &&
+                requests.current.get(monthKey) === request;
+            updateMonth(monthKey, (current) => ({
+                ...current,
+                status: current.status === "success" ? "success" : "loading",
+                refreshing: current.status === "success",
                 error: null,
-                invalidCount: normalized.length - expenses.length
-            });
-            return expenses;
-        } catch (error) {
-            if (generationRef.current === generation && userRef.current?.uid === currentUser.uid) {
-                updateMonth(monthKey, (current) => ({
-                    ...current,
-                    status: "error",
-                    error: readableDataError(error)
-                }));
+                warning: null,
+            }));
+            request.promise = getStore()
+                .then((store) => store.loadExpenses(owner, range))
+                .then((records) => {
+                    const normalized = records.map(({ id, data }) =>
+                        normalizeExpenseRecord(id, data),
+                    );
+                    const expenses = normalized.filter(Boolean);
+                    if (isCurrent())
+                        updateMonth(monthKey, {
+                            expenses,
+                            status: "success",
+                            error: null,
+                            warning: null,
+                            refreshing: false,
+                            invalidCount: normalized.length - expenses.length,
+                            loadedAt: Date.now(),
+                            hasSavedChanges: false,
+                        });
+                    return expenses;
+                })
+                .catch((error) => {
+                    if (isCurrent())
+                        updateMonth(monthKey, (current) => ({
+                            ...current,
+                            refreshing: false,
+                            status: current.status === "success" ? "success" : "error",
+                            error: current.status === "success" ? null : readableError(error),
+                            warning: current.hasSavedChanges
+                                ? "Your saved changes are safe. Could not refresh the latest totals. Retry the refresh; do not submit the expense again."
+                                : current.status === "success"
+                                  ? "Could not refresh expenses. Showing previously loaded data. Retry to get the latest totals."
+                                  : null,
+                        }));
+                    throw error;
+                })
+                .finally(() => {
+                    if (requests.current.get(monthKey) === request)
+                        requests.current.delete(monthKey);
+                });
+            requests.current.set(monthKey, request);
+            return request.promise;
+        },
+        [updateMonth],
+    );
+
+    const runMutation = useCallback(
+        (id, action, monthKey, patch) => {
+            if (operationsRef.current.has(id)) return operationsRef.current.get(id);
+            const owner = userRef.current;
+            const version = generation.current;
+            const valid = () => version === generation.current && owner === userRef.current;
+            setPendingOperations((current) => ({ ...current, [id]: true }));
+            const promise = getStore()
+                .then((store) => {
+                    if (!valid()) throw new Error("Your session changed. Please try again.");
+                    return action(store, owner);
+                })
+                .then((result) => {
+                    if (!valid()) return;
+                    // Invalidate reads started before the acknowledged write.
+                    requests.current.delete(monthKey);
+                    updateMonth(monthKey, (current) => ({
+                        ...current,
+                        expenses: patch(current.expenses, result),
+                        status: current.status === "error" ? "idle" : current.status,
+                        loadedAt: 0,
+                        hasSavedChanges: true,
+                        error: null,
+                        warning: null,
+                    }));
+                    // A refresh failure must never make a committed write look unsuccessful.
+                    loadMonth(monthKey, { force: true }).catch(() => undefined);
+                    return result;
+                })
+                .finally(() => {
+                    if (!valid()) return;
+                    operationsRef.current.delete(id);
+                    setPendingOperations((current) => {
+                        const next = { ...current };
+                        delete next[id];
+                        return next;
+                    });
+                });
+            operationsRef.current.set(id, promise);
+            return promise;
+        },
+        [loadMonth, updateMonth],
+    );
+
+    const createExpense = useCallback(
+        (input) => {
+            if (
+                !userRef.current ||
+                !participantsRef.current.includes(input.participantName) ||
+                !Number.isSafeInteger(input.amountCents) ||
+                input.amountCents <= 0
+            ) {
+                return Promise.reject(
+                    new Error("Choose a participant and enter a valid positive amount."),
+                );
             }
-            throw error;
-        }
-    }, [updateMonth]);
+            const occurredAt = new Date();
+            return runMutation(
+                "create",
+                (store, owner) => store.addExpense(owner, input),
+                monthKeyFromDate(occurredAt),
+                (expenses, id) => [...expenses, { ...input, id, occurredAt }],
+            );
+        },
+        [runMutation],
+    );
 
-    const runMutation = useCallback(async (id, action, monthKey) => {
-        const generation = generationRef.current;
-        const userId = userRef.current?.uid;
-        setMutationState({ pending: true, id, error: null });
-        try {
-            await action();
-            if (generationRef.current !== generation || userRef.current?.uid !== userId) {
-                return;
+    const updateExpenseAmount = useCallback(
+        (id, monthKey, amountCents) => {
+            if (
+                !userRef.current ||
+                !id ||
+                !monthRangeFromKey(monthKey) ||
+                !Number.isSafeInteger(amountCents) ||
+                amountCents <= 0
+            ) {
+                return Promise.reject(
+                    new Error("Enter a valid positive amount with no more than two decimals."),
+                );
             }
-            if (monthKey) {
-                await loadMonth(monthKey, { force: true });
-            }
-            if (generationRef.current === generation && userRef.current?.uid === userId) {
-                setMutationState({ pending: false, id: null, error: null });
-            }
-        } catch (error) {
-            const message = readableDataError(error);
-            if (generationRef.current === generation && userRef.current?.uid === userId) {
-                setMutationState({ pending: false, id: null, error: message });
-            }
-            throw new Error(message);
-        }
-    }, [loadMonth]);
+            return runMutation(
+                id,
+                (store, owner) => store.changeAmount(owner, id, amountCents),
+                monthKey,
+                (expenses) =>
+                    expenses.map((expense) =>
+                        expense.id === id ? { ...expense, amountCents } : expense,
+                    ),
+            );
+        },
+        [runMutation],
+    );
 
-    const createExpense = useCallback(async (input) => {
-        const currentUser = userRef.current;
-        if (!currentUser?.uid || !Number.isSafeInteger(input.amountCents) || input.amountCents <= 0) {
-            throw new Error("The expense data is invalid.");
-        }
+    const deleteExpense = useCallback(
+        (id, monthKey) => {
+            if (!userRef.current || !id || !monthRangeFromKey(monthKey))
+                return Promise.reject(new Error("Unable to identify the expense."));
+            return runMutation(
+                id,
+                (store, owner) => store.removeExpense(owner, id),
+                monthKey,
+                (expenses) => expenses.filter((expense) => expense.id !== id),
+            );
+        },
+        [runMutation],
+    );
 
-        const monthKey = monthKeyFromDate(new Date());
-        await runMutation("create", () => addDoc(
-            collection(db, "expenses", currentUser.uid, "monthly"),
-            {
-                name: input.participantName,
-                amountCents: input.amountCents,
-                date: serverTimestamp(),
-                note: input.note || "",
-                category: input.category || "Other",
-                nonSplit: input.nonSplit === true
-            }
-        ), monthKey);
-    }, [runMutation]);
-
-    const updateExpenseAmount = useCallback(async (id, monthKey, amountCents) => {
-        const currentUser = userRef.current;
-        if (!currentUser?.uid || !id || !Number.isSafeInteger(amountCents) || amountCents <= 0) {
-            throw new Error("Enter a valid positive amount with no more than two decimals.");
-        }
-
-        await runMutation(id, () => updateDoc(
-            doc(db, "expenses", currentUser.uid, "monthly", id),
-            { amountCents, amount: deleteField() }
-        ), monthKey);
-    }, [runMutation]);
-
-    const deleteExpense = useCallback(async (id, monthKey) => {
-        const currentUser = userRef.current;
-        if (!currentUser?.uid || !id) {
-            throw new Error("Unable to identify the expense.");
-        }
-
-        await runMutation(id, () => deleteDoc(
-            doc(db, "expenses", currentUser.uid, "monthly", id)
-        ), monthKey);
-    }, [runMutation]);
-
-    const value = useMemo(() => ({
-        participants,
-        profileStatus,
-        profileError: firebaseConfigurationError || profileError,
-        months,
-        getMonth: (monthKey) => months[monthKey] || EMPTY_MONTH,
-        loadMonth,
-        createExpense,
-        updateExpenseAmount,
-        deleteExpense,
-        mutationState
-    }), [
-        createExpense,
-        deleteExpense,
-        loadMonth,
-        months,
-        mutationState,
-        participants,
-        profileError,
-        profileStatus,
-        updateExpenseAmount
-    ]);
-
+    const value = useMemo(
+        () => ({
+            participants,
+            profileStatus,
+            profileError: firebaseConfigurationError || profileError,
+            getMonth: (key) => months[key] || EMPTY_MONTH,
+            loadMonth,
+            createExpense,
+            updateExpenseAmount,
+            deleteExpense,
+            pendingOperations,
+        }),
+        [
+            participants,
+            profileStatus,
+            profileError,
+            months,
+            loadMonth,
+            createExpense,
+            updateExpenseAmount,
+            deleteExpense,
+            pendingOperations,
+        ],
+    );
     return <FireContext.Provider value={value}>{children}</FireContext.Provider>;
 }
