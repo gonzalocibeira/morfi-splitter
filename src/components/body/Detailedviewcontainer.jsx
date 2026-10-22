@@ -13,7 +13,9 @@ const DailyChart = lazy(() => import("./charts/DailyChart"));
 const CategoryChart = lazy(() => import("./charts/CategoryChart"));
 const UserChart = lazy(() => import("./charts/UserChart"));
 function History({ expenses, monthKey }) {
-    const { pendingOperations, deleteExpense, updateExpenseAmount } = useContext(FireContext);
+    const { participants, pendingOperations, deleteExpense, updateExpenseAmount } =
+        useContext(FireContext);
+    const { legacyUI } = useContext(UIContext);
     const [visible, setVisible] = useState(50);
     return (
         <Card className="history-card">
@@ -22,6 +24,11 @@ function History({ expenses, monthKey }) {
                     <h2>Expense history</h2>
                 </div>
                 <span className="count-badge">{expenses.length}</span>
+            </div>
+            <div className="expense-sides" aria-label="Expense sides by participant">
+                {participants.map((name) => (
+                    <strong key={name}>{name}</strong>
+                ))}
             </div>
             <div className="expense-list">
                 {expenses.slice(0, visible).map((expense) => (
@@ -32,6 +39,8 @@ function History({ expenses, monthKey }) {
                         pending={Boolean(pendingOperations[expense.id])}
                         deleteExpense={deleteExpense}
                         updateExpenseAmount={updateExpenseAmount}
+                        side={expense.participantName === participants[1] ? "right" : "left"}
+                        legacyUI={legacyUI}
                     />
                 ))}
             </div>

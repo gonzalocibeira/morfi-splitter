@@ -1,5 +1,13 @@
 import React from "react";
 const paths = {
+    settings: (
+        <>
+            <path d="M4 6h16M4 12h16M4 18h16" />
+            <circle cx="9" cy="6" r="2" fill="currentColor" />
+            <circle cx="15" cy="12" r="2" fill="currentColor" />
+            <circle cx="9" cy="18" r="2" fill="currentColor" />
+        </>
+    ),
     home: (
         <>
             <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z" />
