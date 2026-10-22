@@ -28,3 +28,7 @@ firestore-debug.log
 
 # Local Netlify state
 .netlify
+
+# Browser verification artifacts
+/test-results/
+/playwright-report/

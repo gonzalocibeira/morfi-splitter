@@ -3,14 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "aos": "^2.3.4",
     "firebase": "^13.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.18.4",
-    "recharts": "^2.15.4",
-    "sweetalert2": "^11.22.4",
-    "sweetalert2-react-content": "^5.0.7"
+    "recharts": "^2.15.4"
   },
   "scripts": {
     "start": "vite --host 127.0.0.1",
@@ -18,7 +15,9 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "jest --watch",
     "test:ci": "jest --runInBand",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-morfi-splitter \"node --test tests/firestore.rules.test.cjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-morfi-splitter \"node --test tests/firestore.rules.test.cjs\"",
+    "start:test": "vite --config vite.e2e.config.mjs --mode e2e --host 127.0.0.1",
+    "test:browser": "playwright test"
   },
   "browserslist": {
     "production": [
@@ -37,6 +36,7 @@
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-react": "^7.28.5",
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@playwright/test": "^1.64.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",

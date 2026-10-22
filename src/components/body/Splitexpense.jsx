@@ -1,105 +1,102 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { FireContext } from "../../Context/FireContext";
+import { UIContext } from "../../Context/UIContext";
 import MonthPicker from "./MonthPicker";
 import { calculateSettlement } from "../../domain/expenses";
 import { formatCents } from "../../domain/money";
 import { formatMonthKey } from "../../domain/months";
-
+import useMonth from "../../hooks/useMonth";
+import { Card, MonthStatus, PageTitle, ProfileGate } from "../ui/Primitives";
+import Icon from "../ui/Icon";
 export default function Splitexpense() {
-    const { participants, profileStatus, profileError, getMonth, loadMonth } = useContext(FireContext);
-    const [selectedMonth, setSelectedMonth] = useState(null);
-    const monthState = selectedMonth ? getMonth(selectedMonth) : null;
+    const { participants } = useContext(FireContext);
+    const { selectedMonth, setSelectedMonth } = useContext(UIContext);
+    const month = useMonth(selectedMonth);
     const settlement = useMemo(
-        () => calculateSettlement(monthState?.expenses || [], participants),
-        [monthState?.expenses, participants]
+        () => calculateSettlement(month.expenses, participants),
+        [month.expenses, participants],
     );
-
-    useEffect(() => {
-        if (selectedMonth) {
-            loadMonth(selectedMonth).catch(() => undefined);
-        }
-    }, [loadMonth, selectedMonth]);
-
     const [first, second] = participants;
-    const firstTotal = settlement.totals[first] || { sharedCents: 0, nonSplitCents: 0 };
-    const secondTotal = settlement.totals[second] || { sharedCents: 0, nonSplitCents: 0 };
-    let debtMessage = "No one owes the other";
-    let classSwitch = "no";
-    if (settlement.owedCents > 0) {
-        debtMessage = `${second} owes ${first} ${formatCents(settlement.owedCents)}`;
-        classSwitch = "t";
-    } else if (settlement.owedCents < 0) {
-        debtMessage = `${first} owes ${second} ${formatCents(Math.abs(settlement.owedCents))}`;
-        classSwitch = "n";
-    }
-
-    if (profileStatus === "loading") {
-        return <p className="statusMsg">Loading household profile…</p>;
-    }
-
-    if (profileError || participants.length !== 2) {
-        return <p className="errorMsg" role="alert">{profileError || "Two participants are required to split expenses."}</p>;
-    }
-
+    const debtor = settlement.owedCents > 0 ? second : first;
+    const creditor = settlement.owedCents > 0 ? first : second;
     return (
         <>
-            <div className="splitDate">
-                <h2>Select date</h2>
-                <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
-            </div>
-            {!selectedMonth && <p className="statusMsg">Please select a month.</p>}
-            {monthState?.status === "loading" && <p className="statusMsg">Loading expenses…</p>}
-            {monthState?.status === "error" && (
-                <div className="errorMsg" role="alert">
-                    <p>{monthState.error}</p>
-                    <button onClick={() => loadMonth(selectedMonth, { force: true }).catch(() => undefined)}>Retry</button>
+            <PageTitle title="Split expenses" icon="split" />
+            <ProfileGate>
+                <div className="month-toolbar">
+                    <MonthPicker value={selectedMonth} onChange={setSelectedMonth} />
                 </div>
-            )}
-            {selectedMonth && monthState?.status === "success" && (
-                <div className="splitCont">
-                    <div className="splitTotal">
-                        <p>{formatMonthKey(selectedMonth)} total: {formatCents(settlement.totalCents)}</p>
-                    </div>
-                    <div className="splitNames">
-                        <div style={totalsGroupStyle}>
-                            <h4>Shared expenses</h4>
-                            <div style={totalsRowStyle}>
-                                <p>{first} spent: {formatCents(firstTotal.sharedCents)}</p>
-                                <p>{second} spent: {formatCents(secondTotal.sharedCents)}</p>
-                            </div>
+                <MonthStatus month={month} monthKey={selectedMonth} />
+                {selectedMonth && month.status === "success" && (
+                    <>
+                        <Card className="settlement-card">
+                            <span className="pill">{formatMonthKey(selectedMonth)}</span>
+                            <p className="settlement-caption">
+                                {settlement.owedCents === 0
+                                    ? "No payment needed"
+                                    : `${debtor} owes ${creditor}`}
+                            </p>
+                            <h2 className="hero-amount">
+                                {formatCents(Math.abs(settlement.owedCents))}
+                            </h2>
+                        </Card>
+                        <div className="section-topline breakdown-heading">
+                            <h2>Payments by person</h2>
+                            <span className="muted">
+                                Total {formatCents(settlement.totalCents)}
+                            </span>
                         </div>
-                        <div style={{ ...totalsGroupStyle, marginTop: 15 }}>
-                            <h4>Purchases made on behalf of the other</h4>
-                            <div style={totalsRowStyle}>
-                                <p>{first} spent: {formatCents(firstTotal.nonSplitCents)}</p>
-                                <p>{second} spent: {formatCents(secondTotal.nonSplitCents)}</p>
-                            </div>
+                        <div className="participant-grid">
+                            {participants.map((name, index) => {
+                                const totals = settlement.totals[name];
+                                return (
+                                    <Card className="participant-card" key={name}>
+                                        <div className="participant-heading">
+                                            <span className={`avatar avatar--${index}`}>
+                                                {name.slice(0, 1).toUpperCase()}
+                                            </span>
+                                            <h3>{name}</h3>
+                                        </div>
+                                        <dl>
+                                            <div>
+                                                <dt>Shared expenses</dt>
+                                                <dd>{formatCents(totals.sharedCents)}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Paid for the other person</dt>
+                                                <dd>{formatCents(totals.nonSplitCents)}</dd>
+                                            </div>
+                                            <div className="participant-total">
+                                                <dt>Total paid</dt>
+                                                <dd>
+                                                    {formatCents(
+                                                        totals.sharedCents + totals.nonSplitCents,
+                                                    )}
+                                                </dd>
+                                            </div>
+                                        </dl>
+                                    </Card>
+                                );
+                            })}
                         </div>
-                    </div>
-                    <div className="splitFlow">
-                        <span className={classSwitch === "t" ? "activeArrow" : "inactiveArrow"}>←</span>
-                        <span className={classSwitch === "no" ? "activeArrow" : "inactiveArrow"}>-</span>
-                        <span className={classSwitch === "n" ? "activeArrow" : "inactiveArrow"}>→</span>
-                        <p>{debtMessage}</p>
-                    </div>
-                    {monthState.expenses.length === 0 && <p className="statusMsg">There are no expenses in this month.</p>}
-                    {monthState.invalidCount > 0 && <p className="errorMsg">{monthState.invalidCount} malformed expense record(s) were skipped.</p>}
-                </div>
-            )}
+                        <p className="split-rules">
+                            Shared expenses are split 50/50. Purchases for the other person are
+                            charged in full.
+                        </p>
+                        {month.expenses.length === 0 && (
+                            <Card className="empty-state">
+                                <Icon name="wallet" size={34} />
+                                <h3>No expenses</h3>
+                                <p>There are no expenses in this month.</p>
+                                <Link to="/new" className="text-link">
+                                    Add an expense <Icon name="arrow" size={16} />
+                                </Link>
+                            </Card>
+                        )}
+                    </>
+                )}
+            </ProfileGate>
         </>
     );
 }
-
-const totalsGroupStyle = {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    width: "90%"
-};
-
-const totalsRowStyle = {
-    display: "flex",
-    justifyContent: "space-around",
-    width: "100%"
-};

@@ -1,4 +1,10 @@
 const MONEY_PATTERN = /^(\d+)(?:[.,](\d{1,2}))?$/;
+const currencyFormatter = new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
 
 export function parseMoneyToCents(value) {
     if (typeof value !== "string" && typeof value !== "number") {
@@ -32,12 +38,7 @@ export function centsToInputValue(cents) {
 export function formatCents(cents) {
     const safeCents = Number.isSafeInteger(cents) ? cents : 0;
 
-    return new Intl.NumberFormat(undefined, {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(safeCents / 100);
+    return currencyFormatter.format(safeCents / 100);
 }
 
 export function centsToChartValue(cents) {

@@ -1,27 +1,21 @@
-import React from 'react';
-import "./navbar.css";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
-import expenses from "../../assets/expenses.png";
-import Nav from "./Nav"
-
+import { AuthContext } from "../../Context/AuthContext";
+import Nav from "./Nav";
+import "./navbar.css";
 export default function Navbar() {
-
-    const categories = [
-        {id:0, name:"Add expense", route:"/new"},
-        {id:1, name:"Split expenses", route:"/split"},
-        {id:2, name:"Detailed view", route:"/detail"}
-    ]
-
-
+    const { user } = useContext(AuthContext);
     return (
-        <header>
-            <Link to={"/"} style={{ textDecoration: 'none' }}>
-                <div className="headerDiv">
-                    <img src={expenses} className="headerIcon" alt="logo"/>
-                    <h1 className="headerH1">Morfi Splitter</h1>
-                </div>
-            </Link>
-            <Nav categories={categories}/>
+        <header className="app-header">
+            <div className="header-inner">
+                <Link to="/" className="brand" aria-label="Morfi Splitter home">
+                    <img className="brand-mark" src="/brand-mark.svg" alt="" width="42" height="42" />
+                    <span className="brand-wordmark">
+                        morfi<span className="brand-light"> splitter</span>
+                    </span>
+                </Link>
+                {user && <Nav />}
+            </div>
         </header>
-    )
+    );
 }

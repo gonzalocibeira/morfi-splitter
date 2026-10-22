@@ -1,4 +1,10 @@
 const MONTH_KEY_PATTERN = /^(\d{4})-(0[1-9]|1[0-2])$/;
+const monthFormatter = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" });
+const expenseDateFormatter = new Intl.DateTimeFormat(undefined, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+});
 
 export function monthKeyFromDate(value) {
     const date = value instanceof Date ? value : new Date(value);
@@ -22,7 +28,7 @@ export function monthRangeFromKey(monthKey) {
 
     return {
         start: new Date(year, monthIndex, 1),
-        end: new Date(year, monthIndex + 1, 1)
+        end: new Date(year, monthIndex + 1, 1),
     };
 }
 
@@ -32,18 +38,11 @@ export function formatMonthKey(monthKey) {
         return "";
     }
 
-    return new Intl.DateTimeFormat(undefined, {
-        month: "long",
-        year: "numeric"
-    }).format(range.start);
+    return monthFormatter.format(range.start);
 }
 
 export function formatExpenseDate(date) {
-    return new Intl.DateTimeFormat(undefined, {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-    }).format(date);
+    return expenseDateFormatter.format(date);
 }
 
 export function dateKey(date) {

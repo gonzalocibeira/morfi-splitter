@@ -8,6 +8,9 @@ function readableAuthError(error) {
     if (error?.code === "auth/invalid-credential" || error?.code === "auth/wrong-password") {
         return "The email or password is incorrect.";
     }
+    if (error?.code === "auth/network-request-failed") {
+        return "Couldn't connect. Check your connection and try logging in again.";
+    }
 
     return error?.message || "Authentication failed. Please try again.";
 }
@@ -19,6 +22,10 @@ export default function AuthProvider({ children }) {
     const [error, setError] = useState(firebaseConfigurationError);
 
     useEffect(() => {
+        if (!auth || firebaseConfigurationError) {
+            setIsAuthReady(true);
+            return undefined;
+        }
         const unsubscribe = onAuthStateChanged(
             auth,
             (currentUser) => {
@@ -28,7 +35,7 @@ export default function AuthProvider({ children }) {
             (authError) => {
                 setError(readableAuthError(authError));
                 setIsAuthReady(true);
-            }
+            },
         );
 
         return unsubscribe;
@@ -58,6 +65,7 @@ export default function AuthProvider({ children }) {
         setError(null);
         try {
             await signOut(auth);
+            setUser(null);
         } catch (logoutError) {
             const message = readableAuthError(logoutError);
             setError(message);
@@ -67,14 +75,18 @@ export default function AuthProvider({ children }) {
         }
     }, []);
 
-    const value = useMemo(() => ({
-        user,
-        isAuthReady,
-        isAuthenticating,
-        error,
-        login,
-        logout
-    }), [error, isAuthReady, isAuthenticating, login, logout, user]);
+    const value = useMemo(
+        () => ({
+            user,
+            isAuthReady,
+            isAuthenticating,
+            error,
+            configurationError: firebaseConfigurationError,
+            login,
+            logout,
+        }),
+        [error, isAuthReady, isAuthenticating, login, logout, user],
+    );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

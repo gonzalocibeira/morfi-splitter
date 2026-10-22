@@ -6,30 +6,35 @@ import Newexpense from "./Newexpense";
 
 function deferred() {
     let resolve;
-    const promise = new Promise((done) => { resolve = done; });
+    const promise = new Promise((done) => {
+        resolve = done;
+    });
     return { promise, resolve };
 }
 
 function renderForm(createExpense = jest.fn()) {
     render(
-        <FireContext.Provider value={{
-            participants: ["Alex", "Sam"],
-            profileStatus: "success",
-            profileError: null,
-            createExpense,
-            mutationState: { pending: false, id: null, error: null }
-        }}>
+        <FireContext.Provider
+            value={{
+                participants: ["Alex", "Sam"],
+                profileStatus: "success",
+                profileError: null,
+                createExpense,
+                pendingOperations: {},
+                getMonth: () => ({ warning: null }),
+            }}
+        >
             <Newexpense />
-        </FireContext.Provider>
+        </FireContext.Provider>,
     );
     return createExpense;
 }
 
 test("validates money before creating an expense", () => {
     const createExpense = renderForm();
-    fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "Alex" } });
-    fireEvent.change(screen.getByLabelText("spent"), { target: { value: "1.234" } });
-    fireEvent.submit(screen.getByRole("button", { name: "Submit" }).closest("form"));
+    fireEvent.change(screen.getByLabelText("Paid by"), { target: { value: "Alex" } });
+    fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "1.234" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save expense" }).closest("form"));
 
     expect(createExpense).not.toHaveBeenCalled();
     expect(screen.getByRole("alert")).toHaveTextContent("no more than two decimals");
@@ -37,15 +42,15 @@ test("validates money before creating an expense", () => {
 
 test("accepts a comma from locale-aware decimal keyboards", async () => {
     const createExpense = renderForm();
-    const amountInput = screen.getByLabelText("spent");
+    const amountInput = screen.getByLabelText("Amount");
 
     expect(amountInput).toHaveAttribute("type", "text");
     expect(amountInput).toHaveAttribute("inputmode", "decimal");
 
-    fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "Alex" } });
+    fireEvent.change(screen.getByLabelText("Paid by"), { target: { value: "Alex" } });
     fireEvent.change(amountInput, { target: { value: "12,34" } });
     await act(async () => {
-        fireEvent.submit(screen.getByRole("button", { name: "Submit" }).closest("form"));
+        fireEvent.submit(screen.getByRole("button", { name: "Save expense" }).closest("form"));
     });
 
     expect(createExpense).toHaveBeenCalledWith({
@@ -53,17 +58,17 @@ test("accepts a comma from locale-aware decimal keyboards", async () => {
         amountCents: 1234,
         category: "Supermarket",
         note: "",
-        nonSplit: false
+        nonSplit: false,
     });
 });
 
 test("prevents duplicate submissions while a create is pending", async () => {
     const pending = deferred();
     const createExpense = renderForm(jest.fn(() => pending.promise));
-    fireEvent.change(screen.getByLabelText("Participant"), { target: { value: "Alex" } });
-    fireEvent.change(screen.getByLabelText("spent"), { target: { value: "12.34" } });
+    fireEvent.change(screen.getByLabelText("Paid by"), { target: { value: "Alex" } });
+    fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "12.34" } });
 
-    const submit = screen.getByRole("button", { name: "Submit" });
+    const submit = screen.getByRole("button", { name: "Save expense" });
     fireEvent.click(submit);
     expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Saving…" }));
