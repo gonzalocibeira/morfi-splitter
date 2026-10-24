@@ -34,7 +34,8 @@ Expense history with amount editing and deletion controls:
 
 ## Development
 
-Use Node.js 24 (`nvm use`) and install the locked dependencies with `npm ci`.
+Use Node.js 24.22.1 (`nvm install` then `nvm use`) and install the locked dependencies with `npm ci`.
+The supported runtimes are Node.js 22.23.4+ on the 22.x line and 24.22.1+ on the 24.x line. npm rejects unsupported versions through `.npmrc`; these minimums include the October 21, 2026 security fixes.
 Set `REACT_APP_FIREBASE_API_KEY` in `.env.local` or the Netlify environment.
 The Vite build preserves this existing environment variable name. Missing configuration displays a setup error in the login screen.
 
@@ -45,7 +46,7 @@ The Vite build preserves this existing environment variable name. Missing config
 - `npm run test:rules` runs Firestore rules tests; Java 21+ is required on `PATH`.
 - `npm audit` checks production and development dependencies.
 
-Netlify builds the `main` branch using Node.js 24 and the settings in `netlify.toml`.
+Netlify builds the `main` branch using Node.js 24.22.1 and the settings in `netlify.toml`.
 The month selector uses the browser's native month input, with a `YYYY-MM` text fallback in browsers that do not provide a month picker.
 
 ## Browser verification and previews
@@ -60,3 +61,5 @@ See [the redesign verification report](docs/ui-redesign.md) for changes, bundle 
 ## Dependency overrides
 
 Security overrides in `package.json` keep Firebase's gRPC transport and CLI dependencies patched until upstream adopts those versions. The CLI uses Chokidar 4 to remove the unpatched `braces` dependency; its Firestore rules watcher accepts a file path. Jest's coverage configuration loader uses JS-YAML 4 to remove the unpatched `sprintf-js` chain. Recheck these overrides when upgrading Firebase tools or Jest.
+
+See [the October 2026 security review](docs/security-review-2026-10.md) for the advisory sources, dependency fixes, and deployment follow-up.
